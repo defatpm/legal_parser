@@ -1,0 +1,67 @@
+MERCY GENERAL HOSPITAL
+MEDICAL RECORD
+
+Date of Service: 03/15/2023
+Patient: John Doe
+MRN: 12345678
+
+ADMISSION NOTE
+
+Provider: Dr. Sarah Johnson, MD
+Facility: Mercy General Hospital
+Date: 03/15/2023
+
+CHIEF COMPLAINT:
+Chest pain and shortness of breath
+
+HISTORY OF PRESENT ILLNESS:
+Patient is a 45-year-old male presenting with acute onset of chest pain and shortness of breath that began approximately 2 hours ago. Pain is described as crushing, substernal, radiating to left arm. Associated with diaphoresis and nausea.
+
+PAST MEDICAL HISTORY:
+- Hypertension
+- Diabetes mellitus type 2
+- Hyperlipidemia
+
+MEDICATIONS:
+1. Lisinopril 10mg daily
+2. Metformin 1000mg twice daily
+3. Atorvastatin 20mg daily
+
+PHYSICAL EXAMINATION:
+Vital Signs: BP 150/90, HR 110, RR 22, O2 Sat 94% on RA
+General: Anxious appearing male in moderate distress
+Cardiovascular: Tachycardic, regular rhythm, no murmurs
+Pulmonary: Bilateral crackles at bases
+Abdomen: Soft, non-tender, non-distended
+
+LABORATORY RESULTS
+
+Date of Service: 03/15/2023
+Provider: Laboratory Department
+Facility: Mercy General Hospital
+
+Troponin I: 0.8 ng/mL (elevated)
+CK-MB: 25 ng/mL (elevated)
+BNP: 450 pg/mL (elevated)
+CBC: WBC 12,000, Hgb 14.2, Plt 250,000
+BMP: Na 138, K 4.2, Cl 102, CO2 24, BUN 18, Cr 1.1, Glucose 180
+
+ASSESSMENT AND PLAN:
+1. Acute myocardial infarction - STEMI
+   - Cardiology consultation
+   - Cardiac catheterization
+   - Anticoagulation with heparin
+   - Antiplatelet therapy with aspirin and clopidogrel
+
+2. Acute heart failure
+   - Furosemide 40mg IV
+   - Monitor I/O
+   - Daily weights
+
+3. Diabetes management
+   - Continue home medications
+   - Sliding scale insulin
+
+Dr. Sarah Johnson, MD
+Attending Physician
+Mercy General Hospital

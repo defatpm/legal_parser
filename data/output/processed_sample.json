@@ -1,0 +1,102 @@
+{
+  "document_id": "c06db028-9879-4909-8093-c306ff4111d9",
+  "original_filename": "sample_medical_record.pdf",
+  "total_pages": 2,
+  "processing_date": "2025-07-10T17:59:43.066078",
+  "total_segments": 4,
+  "date_range": {
+    "start": "2023-03-15T00:00:00",
+    "end": "2023-03-15T00:00:00"
+  },
+  "timeline": [
+    {
+      "segment_id": "3a9872b7-88ba-40f5-be6c-3eadb69735e7",
+      "text_content": "Date of Service: 03/15/2023\nPatient: John Doe\nMRN: 12345678",
+      "page_start": 1,
+      "page_end": 1,
+      "date_of_service": "2023-03-15T00:00:00",
+      "document_type": "Emergency Department",
+      "provider_name": null,
+      "facility_name": null,
+      "keywords": [
+        "Date",
+        "Service",
+        "Date of Service",
+        "03/15/2023\nPatient",
+        "12345678",
+        "John Doe\nMRN"
+      ],
+      "chunks": []
+    },
+    {
+      "segment_id": "fefe47a6-b1ca-4458-b157-901a7cbb7c9a",
+      "text_content": "Facility: Mercy General Hospital\nDate: 03/15/2023\nCHIEF COMPLAINT:\nChest pain and shortness of breath\nHISTORY OF PRESENT ILLNESS:\nPatient is a 45-year-old male presenting with acute onset of chest pain and\nshortness of breath that began approximately 2 hours ago. Pain is described as\ncrushing, substernal, radiating to left arm. Associated with diaphoresis and\nnausea.\nPAST MEDICAL HISTORY:\n- Hypertension\n- Diabetes mellitus type 2\n- Hyperlipidemia\nMEDICATIONS:\n1. Lisinopril 10mg daily\n2. Metformin 1000mg twice daily\n3. Atorvastatin 20mg daily\nPHYSICAL EXAMINATION:\nVital Signs: BP 150/90, HR 110, RR 22, O2 Sat 94% on RA\nGeneral: Anxious appearing male in moderate distress\nCardiovascular: Tachycardic, regular rhythm, no murmurs\nPulmonary: Bilateral crackles at bases\nAbdomen: Soft, non-tender, non-distended",
+      "page_start": 1,
+      "page_end": 1,
+      "date_of_service": "2023-03-15T00:00:00",
+      "document_type": "Emergency Department",
+      "provider_name": null,
+      "facility_name": "Mercy General Hospital",
+      "keywords": [
+        "a 45-year-old male",
+        "Lisinopril",
+        "MEDICAL HISTORY",
+        "no murmurs\nPulmonary",
+        "22",
+        "2",
+        "chest pain",
+        "- Hypertension\n- Diabetes mellitus",
+        "daily\nPHYSICAL EXAMINATION",
+        "nausea"
+      ],
+      "chunks": []
+    },
+    {
+      "segment_id": "a23c1c61-86d4-4029-9d1d-011682d2e702",
+      "text_content": "Facility: Mercy General Hospital\nTroponin I: 0.8 ng/mL (elevated)\nCK-MB: 25 ng/mL (elevated)\nBNP: 450 pg/mL (elevated)\nCBC: WBC 12,000, Hgb 14.2, Plt 250,000\nBMP: Na 138, K 4.2, Cl 102, CO2 24, BUN 18, Cr 1.1, Glucose 180\nASSESSMENT AND PLAN:\n1. Acute myocardial infarction - STEMI\n - Cardiology",
+      "page_start": 1,
+      "page_end": 1,
+      "date_of_service": null,
+      "document_type": "Radiology Report",
+      "provider_name": null,
+      "facility_name": "Mercy General Hospital",
+      "keywords": [
+        "Acute myocardial infarction - STEMI\n - Cardiology",
+        "Hgb 14.2",
+        "250,000\nBMP",
+        "CK",
+        "25",
+        "450",
+        "Glucose",
+        "CK-MB",
+        "Cr 1.1",
+        "0.8 ng/mL"
+      ],
+      "chunks": []
+    },
+    {
+      "segment_id": "6af9fbc1-64ac-482d-b78b-178af9ff284c",
+      "text_content": "consultation\n - Cardiac catheterization\n - Anticoagulation with heparin\n - Antiplatelet therapy with aspirin and clopidogrel\n\n[PAGE_2]\n2. Acute heart failure\n - Furosemide 40mg IV\n - Monitor I/O\n - Daily weights\n3. Diabetes management\n - Continue home medications\n - Sliding scale insulin\nDr. Sarah Johnson, MD\nAttending Physician\nMercy General Hospital",
+      "page_start": 2,
+      "page_end": 2,
+      "date_of_service": null,
+      "document_type": "Consultation",
+      "provider_name": null,
+      "facility_name": null,
+      "keywords": [
+        "management",
+        "heparin\n - Antiplatelet therapy",
+        "Physician",
+        "Sarah Johnson",
+        "MD",
+        "/O\n - Daily",
+        "failure",
+        "clopidogrel",
+        "2",
+        "40"
+      ],
+      "chunks": []
+    }
+  ],
+  "metadata": {}
+}
