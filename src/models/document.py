@@ -3,63 +3,59 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
 class PageContent:
     """Represents extracted content from a single PDF page."""
-    
     page_number: int
     raw_text: str
     is_ocr_applied: bool = False
-    confidence_score: Optional[float] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    confidence_score: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class DocumentSegment:
     """Represents a logical segment of a medical document."""
-    
     segment_id: str
     text_content: str
     page_start: int
     page_end: int
-    date_of_service: Optional[datetime] = None
-    document_type: Optional[str] = None
-    provider_name: Optional[str] = None
-    facility_name: Optional[str] = None
-    keywords: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    chunks: List[DocumentChunk] = field(default_factory=list)
+    date_of_service: datetime | None = None
+    document_type: str | None = None
+    provider_name: str | None = None
+    facility_name: str | None = None
+    keywords: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    chunks: list[DocumentChunk] = field(default_factory=list)
 
 
 @dataclass
 class DocumentChunk:
     """Represents a sub-chunk of a document segment for AI processing."""
-    
     chunk_id: str
     parent_segment_id: str
     text_content: str
     token_count: int
     chunk_index: int
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ProcessedDocument:
     """Represents the final processed medical record document."""
-    
     document_id: str
     original_filename: str
     total_pages: int
     processing_date: datetime
-    segments: List[DocumentSegment] = field(default_factory=list)
-    date_range: Optional[tuple[datetime, datetime]] = None
+    segments: list[DocumentSegment] = field(default_factory=list)
+    date_range: tuple[datetime, datetime] | None = None
     total_segments: int = 0
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> Dict[str, Any]:
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "document_id": self.document_id,

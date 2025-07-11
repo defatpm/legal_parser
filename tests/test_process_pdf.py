@@ -1,7 +1,9 @@
-import pytest
-from src.process_pdf import PDFProcessor
-from pathlib import Path
 import json
+
+import pytest
+
+from src.process_pdf import PDFProcessor
+
 
 @pytest.fixture
 def sample_pdf(tmp_path):
@@ -16,7 +18,7 @@ def test_process_pdf(sample_pdf, tmp_path):
     # Mock extraction for test (override methods if needed)
     processor.process()
     assert output_path.exists()
-    with open(output_path, 'r') as f:
+    with open(output_path) as f:
         data = json.load(f)
     assert isinstance(data, list)
     # Add more assertions based on expected output

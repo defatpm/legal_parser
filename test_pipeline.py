@@ -28,7 +28,7 @@ def test_processor_initialization():
     print("Testing processor initialization...")
 
     try:
-        processor = PDFProcessor()
+        PDFProcessor()
         print("✓ PDFProcessor initialized successfully")
         return True
     except Exception as e:
@@ -44,7 +44,7 @@ def test_spacy_model():
         import spacy
 
         nlp = spacy.load("en_core_web_sm")
-        doc = nlp("This is a test document.")
+        nlp("This is a test document.")
         print("✓ spaCy model loaded successfully")
         return True
     except Exception as e:
