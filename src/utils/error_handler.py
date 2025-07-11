@@ -7,7 +7,7 @@ import traceback
 from collections.abc import Callable
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union
 
 from .config import get_config
 from .exceptions import (
@@ -182,9 +182,9 @@ def handle_exceptions(
     Returns:
         Decorator function
     """
-    def decorator(func: Callable[..., T]) -> Callable[..., T | Any]:
+    def decorator(func: Callable[..., T]) -> Callable[..., Union[T, Any]]:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> T | Any:
+        def wrapper(*args, **kwargs) -> Union[T, Any]:
             try:
                 return func(*args, **kwargs)
             except exceptions as e:
@@ -236,7 +236,7 @@ def safe_execute(
     default_return: Any | None = None,
     max_retries: int = 0,
     **kwargs
-) -> T | Any:
+) -> Union[T, Any]:
     """Safely execute a function with error handling and optional retries.
 
     Args:
