@@ -245,10 +245,10 @@ def error_context(operation: str, **context):
 def safe_execute(
     func: Callable[..., T],
     *args,
-    default_return: Any | None = None,
+    default_return: T | None = None,
     max_retries: int = 0,
     **kwargs,
-) -> T | Any:
+) -> T | None:
     """Safely execute a function with error handling and optional retries.
 
     Args:
