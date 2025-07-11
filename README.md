@@ -71,6 +71,11 @@ This decoupled architecture allows for flexible and independent development of t
     poetry install
     ```
 
+3.  **Download the spaCy model:**
+    ```bash
+    poetry run python -m spacy download en_core_web_sm
+    ```
+
 ---
 
 ## 💻 Usage

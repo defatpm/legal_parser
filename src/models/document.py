@@ -26,6 +26,7 @@ class DocumentSegment:
     text_content: str
     page_start: int
     page_end: int
+    text: str = ""
     date_of_service: datetime | None = None
     document_type: str | None = None
     provider_name: str | None = None

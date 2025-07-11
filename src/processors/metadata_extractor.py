@@ -26,8 +26,8 @@ class MetadataExtractor:
         try:
             self.nlp = spacy.load(spacy_model)
         except OSError:
-            logger.warning(f"spaCy model {spacy_model} not found. Using blank model.")
-            self.nlp = spacy.blank("en")
+            logger.error(f"spaCy model '{spacy_model}' not found. Please download it by running 'python -m spacy download {spacy_model}'")
+            raise
         self.matcher = Matcher(self.nlp.vocab)
         self._setup_patterns()
         self.document_type_keywords = self._build_document_type_keywords()

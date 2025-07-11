@@ -1,0 +1,238 @@
+# Medical Record Pre-Processor Test Configuration
+
+# Application Settings
+app:
+  name: "Medical Record Pre-Processor"
+  version: "0.1.0"
+  debug: false
+
+# Processing Settings
+processing:
+  # Maximum file size in MB
+  max_file_size_mb: 100
+  
+  # Timeout settings in seconds
+  timeout:
+    pdf_extraction: 300
+    segmentation: 180
+    metadata_extraction: 120
+    timeline_building: 60
+  
+  # Memory settings
+  memory:
+    # Maximum memory usage per document in MB
+    max_memory_per_doc_mb: 1024
+    # Enable memory monitoring
+    enable_monitoring: false
+
+# PDF Extraction Settings
+pdf_extraction:
+  # OCR settings
+  ocr:
+    enabled: true
+    language: "eng"
+    confidence_threshold: 60
+    # DPI for image processing
+    dpi: 300
+  
+  # Text extraction settings
+  text:
+    # Remove extra whitespace
+    normalize_whitespace: true
+    # Remove page headers/footers
+    remove_headers_footers: true
+    # Minimum text length to consider valid
+    min_text_length: 10
+
+# Document Segmentation Settings
+segmentation:
+  # Segmentation strategy: "keyword", "ml", "hybrid"
+  strategy: "keyword"
+  
+  # Keyword-based segmentation
+  keywords:
+    # Medical section keywords
+    medical_sections:
+      - "patient history"
+      - "diagnosis"
+      - "treatment"
+      - "medications"
+      - "laboratory results"
+      - "imaging"
+      - "procedure notes"
+      - "discharge summary"
+    
+    # Date patterns
+    date_patterns:
+      - "\\d{1,2}/\\d{1,2}/\\d{4}"
+      - "\\d{4}-\\d{2}-\\d{2}"
+      - "\\b\\w+\\s+\\d{1,2},\\s+\\d{4}\\b"
+  
+  # Minimum segment length
+  min_segment_length: 50
+  
+  # Maximum segment length
+  max_segment_length: 2000
+
+# Metadata Extraction Settings
+metadata_extraction:
+  # Entity recognition
+  entities:
+    # Enable named entity recognition
+    enabled: true
+    # Entity types to extract
+    types:
+      - "PERSON"
+      - "DATE"
+      - "ORG"
+      - "GPE"
+      - "TIME"
+  
+  # Date extraction
+  dates:
+    # Date formats to recognize
+    formats:
+      - "%m/%d/%Y"
+      - "%Y-%m-%d"
+      - "%B %d, %Y"
+      - "%b %d, %Y"
+    
+    # Timezone handling
+    default_timezone: "UTC"
+  
+  # Provider extraction
+  providers:
+    # Common provider titles
+    titles:
+      - "Dr."
+      - "Doctor"
+      - "Physician"
+      - "Nurse"
+      - "PA"
+      - "NP"
+      - "MD"
+      - "DO"
+
+# Timeline Building Settings
+timeline:
+  # Sort order: "chronological", "reverse_chronological"
+  sort_order: "chronological"
+  
+  # Group events by time period
+  grouping:
+    enabled: true
+    # Grouping period: "day", "week", "month"
+    period: "day"
+  
+  # Include confidence scores
+  include_confidence: true
+
+# Output Settings
+output:
+  # Default output format: "json", "csv", "excel"
+  default_format: "json"
+  
+  # JSON output settings
+  json:
+    # Pretty print with indentation
+    "pretty_print": true
+    indent: 2
+    # Ensure ASCII encoding
+    ensure_ascii: false
+  
+  # CSV output settings
+  csv:
+    # Field delimiter
+    delimiter: ","
+    # Quote character
+    quote_char: "\""
+    # Include headers
+    "include_headers": true
+  
+  # File naming
+  naming:
+    # Include timestamp in filename
+    include_timestamp: false
+    # Filename template
+    template: "{stem}_processed"
+
+# Logging Settings
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log to file
+  file:
+    enabled: false
+    path: "logs/processor.log"
+    max_size_mb: 10
+    backup_count: 5
+  
+  # Structured logging
+  structured:
+    enabled: false
+    format: "json"
+
+# API Settings (for future use)
+api:
+  # Server settings
+  server:
+    host: "0.0.0.0"
+    port: 8000
+    workers: 4
+  
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+  
+  # CORS settings
+  cors:
+    "enabled": true
+    origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+
+# Security Settings
+security:
+  # Input validation
+  validation:
+    # Maximum filename length
+    max_filename_length: 255
+    # Allowed file extensions
+    allowed_extensions:
+      - ".pdf"
+    # Scan for malicious content
+    malware_scan: false
+  
+  # Temporary file settings
+  temp_files:
+    # Auto-cleanup temporary files
+    auto_cleanup: true
+    # Cleanup interval in seconds
+    cleanup_interval: 3600
+    # Maximum age for temp files in seconds
+    max_age: 86400
+
+# Performance Settings
+performance:
+  # Parallel processing
+  parallel:
+    enabled: true
+    # Number of worker processes (0 = auto-detect)
+    workers: 0
+    # Chunk size for batch processing
+    chunk_size: 10
+  
+  # Caching
+  cache:
+    enabled: true
+    # Cache type: "memory", "redis", "file"
+    type: "memory"
+    # TTL in seconds
+    ttl: 3600
+    # Maximum cache size in MB
+    max_size_mb: 128

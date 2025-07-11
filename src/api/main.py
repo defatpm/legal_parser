@@ -323,8 +323,7 @@ async def list_processors():
 
 
 @app.post("/upload", response_model=FileUploadResponse)
-@limiter.limit("10/minute")
-async def upload_file(request: Request, file: UploadFile = File(...)):
+async def upload_file(request: Request, file: UploadFile = File(...)) -> FileUploadResponse:
     """Upload a file for processing."""
     validate_file_upload(file)
     try:
@@ -350,12 +349,11 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
 
 
 @app.post("/process", response_model=ProcessingResponse)
-@limiter.limit("5/minute")
 async def process_document(
     request: Request,
     file: UploadFile = File(...),
     processing_request: ProcessingRequest = Depends(),
-):
+) -> ProcessingResponse:
     """Process a document."""
     validate_file_upload(file)
     try:

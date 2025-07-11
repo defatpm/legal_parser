@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from src.process_pdf import PDFProcessor
+from src.utils.exceptions import FileSystemError
+from tests.test_utils import ConcretePDFExtractor
 
 
 class TestPDFProcessingIntegration:
@@ -13,7 +15,7 @@ class TestPDFProcessingIntegration:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.processor = PDFProcessor()
+        self.processor = PDFProcessor(extractor=ConcretePDFExtractor())
         self.sample_pdf_path = Path("data/sample/sample_medical_record.pdf")
         self.test_output_path = Path("data/output/test_output.json")
 
@@ -68,7 +70,7 @@ class TestPDFProcessingIntegration:
 
     def test_processor_initialization(self):
         """Test that PDFProcessor initializes correctly."""
-        processor = PDFProcessor()
+        processor = PDFProcessor(extractor=ConcretePDFExtractor())
 
         assert processor.extractor is not None
         assert processor.segmenter is not None
@@ -79,5 +81,5 @@ class TestPDFProcessingIntegration:
         """Test that appropriate error is raised for non-existent files."""
         non_existent_path = Path("does_not_exist.pdf")
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileSystemError):
             self.processor.process_pdf(non_existent_path)

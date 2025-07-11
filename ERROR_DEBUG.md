@@ -1,27 +1,26 @@
 #GITHUB ERROR 1
 
-The failure is due to a type annotation issue in your code, specifically at this line:
+##Root Cause: Your tests are failing due to a syntax error in src/utils/error_handler.py at line 245. The function is currently defined as:
 
-Python
-def some_function(
-    ...,
-) -> T | Any:
-The error (UP047) suggests that the type annotation T | Any is not valid syntax in this context. Instead, you should use type parameters with typing.TypeVar for generics.
+	def safe_execute[T](
+	
+##This is invalid Python syntax. Python does not use square brackets [] for generic type parameters in function definitions (unlike TypeScript or some other languages).
 
-To fix this, declare T as a TypeVar and use only T or Any where appropriate. For example:
+##How to Fix: Replace the square brackets [] with parentheses () and use TypeVar for generic typing in the function signature. The correct way to write a generic function in Python is:
 
-Python
-from typing import TypeVar, Any
+	def safe_execute(
+    	func: Callable[..., T],
+    	*args,
+    	default_return: Any | None = None,
+    	max_retries: int = 0,
+    	**kwargs,
+	) -> T | Any:
 
-T = TypeVar('T')
+##So change:
 
-def some_function(
-    ...,
-) -> T:
-Or if you want to allow both T and Any, just use Any:
+	def safe_execute[T](
 
-Python
-def some_function(
-    ...,
-) -> Any:
-Adjust your function signature in the file referenced by the error to resolve the CI job failure.
+##To:
+
+	def safe_execute[T](
+

@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 class PDFProcessor:
     """Main PDF processing pipeline."""
 
-    def __init__(self):
+    def __init__(self, extractor: PDFExtractor | None = None):
         """Initialize PDF processor with configured components."""
         self.config = get_config()
-        self.extractor = PDFExtractor()
+        self.extractor = extractor or PDFExtractor()
         self.segmenter = DocumentSegmenter()
         self.metadata_extractor = MetadataExtractor()
         self.timeline_builder = TimelineBuilder()

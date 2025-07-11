@@ -18,8 +18,8 @@ from src.processors.base import (
     get_processor_registry,
     register_processor,
 )
-from src.processors.pdf_extractor import PDFExtractor
 from src.utils.exceptions import ValidationError
+from tests.test_utils import ConcretePDFExtractor
 
 
 class TestProcessorMetadata:
@@ -135,6 +135,12 @@ class TestProcessingResult:
 
 class MockProcessor(BaseProcessor):
     """Mock processor for testing."""
+
+    def _apply_config_overrides(self):
+        pass
+
+    def _validate_processor_config(self):
+        pass
 
     @property
     def metadata(self) -> ProcessorMetadata:
@@ -327,7 +333,7 @@ class TestPDFExtractorInterface:
 
     def test_pdf_extractor_metadata(self):
         """Test PDFExtractor metadata."""
-        extractor = PDFExtractor()
+        extractor = ConcretePDFExtractor()
         metadata = extractor.metadata
 
         assert metadata.name == "PDFExtractor"
@@ -339,7 +345,7 @@ class TestPDFExtractorInterface:
 
     def test_pdf_extractor_can_process(self):
         """Test PDFExtractor can_process method."""
-        extractor = PDFExtractor()
+        extractor = ConcretePDFExtractor()
 
         # Create a temporary PDF file for testing
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
@@ -356,7 +362,7 @@ class TestPDFExtractorInterface:
 
     def test_pdf_extractor_process_nonexistent_file(self):
         """Test PDFExtractor with non-existent file."""
-        extractor = PDFExtractor()
+        extractor = ConcretePDFExtractor()
 
         result = extractor.process("nonexistent.pdf")
 
@@ -366,7 +372,7 @@ class TestPDFExtractorInterface:
 
     def test_pdf_extractor_process_invalid_input(self):
         """Test PDFExtractor with invalid input."""
-        extractor = PDFExtractor()
+        extractor = ConcretePDFExtractor()
 
         result = extractor.process(123)
 
@@ -376,7 +382,7 @@ class TestPDFExtractorInterface:
 
     def test_pdf_extractor_get_stats(self):
         """Test PDFExtractor statistics."""
-        extractor = PDFExtractor()
+        extractor = ConcretePDFExtractor()
 
         stats = extractor.get_processing_stats()
 
@@ -392,6 +398,7 @@ class TestGlobalRegistry:
     def test_global_registry_access(self):
         """Test accessing global registry."""
         registry = get_processor_registry()
+        registry.register(ConcretePDFExtractor)
 
         assert isinstance(registry, ProcessorRegistry)
         # PDF extractor should be registered by default

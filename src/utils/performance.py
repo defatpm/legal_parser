@@ -148,6 +148,27 @@ class PerformanceMonitor:
         )
         return metrics
 
+    def start_batch_processing(self):
+        """Start monitoring a batch processing operation."""
+        return self.start_operation("batch_processing")
+
+    def stop_batch_processing(self, operation_id: str):
+        """Stop monitoring a batch processing operation."""
+        return self.end_operation(operation_id)
+
+    def get_memory_usage(self) -> float:
+        """Get current memory usage in MB.
+
+        Returns:
+            Current memory usage in MB
+        """
+        try:
+            process = psutil.Process()
+            return process.memory_info().rss / 1024 / 1024
+        except psutil.Error as e:
+            logger.warning(f"Failed to get memory usage: {e}")
+            return 0.0
+
     def get_metrics_summary(self) -> dict[str, Any]:
         """Get summary of all metrics.
 

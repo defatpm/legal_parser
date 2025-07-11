@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import tempfile
 import time
 from pathlib import Path
@@ -30,6 +31,15 @@ from src.utils.streaming import (
     streaming_map,
     streaming_reduce,
 )
+
+
+@pytest.fixture(autouse=True)
+def set_test_config():
+    """Set the test configuration file."""
+    os.environ["MEDICAL_PROCESSOR_CONFIG"] = "tests/config.yaml"
+    yield
+    del os.environ["MEDICAL_PROCESSOR_CONFIG"]
+
 
 
 class TestPerformanceMetrics:

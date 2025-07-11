@@ -11,6 +11,42 @@ import pytest
 from src.batch_processor import BatchJob, BatchProcessor, BatchProgress, BatchStatistics
 
 
+@pytest.fixture
+def temp_dirs():
+    """Create temporary directories for testing."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        input_dir = temp_path / "input"
+        output_dir = temp_path / "output"
+        input_dir.mkdir()
+        output_dir.mkdir()
+
+        yield {"temp": temp_path, "input": input_dir, "output": output_dir}
+
+@pytest.fixture
+def sample_pdf_files(temp_dirs):
+    """Create sample PDF files for testing."""
+    input_dir = temp_dirs["input"]
+
+    # Create sample PDF files (empty files for testing)
+    pdf_files = []
+    for i in range(5):
+        pdf_file = input_dir / f"sample_{i}.pdf"
+        pdf_file.write_text(f"Sample PDF content {i}")
+        pdf_files.append(pdf_file)
+
+    # Create subdirectory with more files
+    subdir = input_dir / "subdir"
+    subdir.mkdir()
+    for i in range(3):
+        pdf_file = subdir / f"sub_sample_{i}.pdf"
+        pdf_file.write_text(f"Sub sample PDF content {i}")
+        pdf_files.append(pdf_file)
+
+    return pdf_files
+
+
+
 class TestBatchJob:
     """Test the BatchJob class."""
 
@@ -89,40 +125,6 @@ class TestBatchProgress:
 
 class TestBatchProcessor:
     """Test the BatchProcessor class."""
-
-    @pytest.fixture
-    def temp_dirs(self):
-        """Create temporary directories for testing."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            input_dir = temp_path / "input"
-            output_dir = temp_path / "output"
-            input_dir.mkdir()
-            output_dir.mkdir()
-
-            yield {"temp": temp_path, "input": input_dir, "output": output_dir}
-
-    @pytest.fixture
-    def sample_pdf_files(self, temp_dirs):
-        """Create sample PDF files for testing."""
-        input_dir = temp_dirs["input"]
-
-        # Create sample PDF files (empty files for testing)
-        pdf_files = []
-        for i in range(5):
-            pdf_file = input_dir / f"sample_{i}.pdf"
-            pdf_file.write_text(f"Sample PDF content {i}")
-            pdf_files.append(pdf_file)
-
-        # Create subdirectory with more files
-        subdir = input_dir / "subdir"
-        subdir.mkdir()
-        for i in range(3):
-            pdf_file = subdir / f"sub_sample_{i}.pdf"
-            pdf_file.write_text(f"Sub sample PDF content {i}")
-            pdf_files.append(pdf_file)
-
-        return pdf_files
 
     def test_batch_processor_creation(self):
         """Test creating a batch processor."""

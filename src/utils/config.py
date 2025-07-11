@@ -250,12 +250,12 @@ class ConfigManager:
         Returns:
             Path to configuration file
         """
-        if config_path:
-            return Path(config_path)
-        # Check environment variable
+        # Check environment variable first
         env_path = os.getenv("MEDICAL_PROCESSOR_CONFIG")
         if env_path:
             return Path(env_path)
+        if config_path:
+            return Path(config_path)
         # Check default locations
         default_locations = [
             Path.cwd() / "config.yaml",
@@ -322,27 +322,27 @@ class ConfigManager:
         config = Config()
         # Update each configuration section
         if "app" in config_data:
-            config.app = AppConfig(**config_data["app"])
+            config.app = AppConfig(**config_data.get("app", {}))
         if "processing" in config_data:
-            config.processing = ProcessingConfig(**config_data["processing"])
+            config.processing = ProcessingConfig(**config_data.get("processing", {}))
         if "pdf_extraction" in config_data:
-            config.pdf_extraction = PDFExtractionConfig(**config_data["pdf_extraction"])
+            config.pdf_extraction = PDFExtractionConfig(**config_data.get("pdf_extraction", {}))
         if "segmentation" in config_data:
-            config.segmentation = SegmentationConfig(**config_data["segmentation"])
+            config.segmentation = SegmentationConfig(**config_data.get("segmentation", {}))
         if "metadata_extraction" in config_data:
             config.metadata_extraction = MetadataExtractionConfig(
-                **config_data["metadata_extraction"]
+                **config_data.get("metadata_extraction", {})
             )
         if "timeline" in config_data:
-            config.timeline = TimelineConfig(**config_data["timeline"])
+            config.timeline = TimelineConfig(**config_data.get("timeline", {}))
         if "output" in config_data:
-            config.output = OutputConfig(**config_data["output"])
+            config.output = OutputConfig(**config_data.get("output", {}))
         if "logging" in config_data:
-            config.logging = LoggingConfig(**config_data["logging"])
+            config.logging = LoggingConfig(**config_data.get("logging", {}))
         if "security" in config_data:
-            config.security = SecurityConfig(**config_data["security"])
+            config.security = SecurityConfig(**config_data.get("security", {}))
         if "performance" in config_data:
-            config.performance = PerformanceConfig(**config_data["performance"])
+            config.performance = PerformanceConfig(**config_data.get("performance", {}))
         return config
 
     def _validate_config(self, config: Config) -> None:

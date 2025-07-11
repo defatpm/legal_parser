@@ -125,7 +125,7 @@ class BatchProcessor:
         """
         self.config = get_config()
         self.max_workers = (
-            max_workers or self.config.performance.parallel.workers or os.cpu_count()
+            max_workers or self.config.performance.parallel['workers'] or os.cpu_count()
         )
         self.progress_callback = progress_callback
         self.performance_monitor = PerformanceMonitor()
@@ -213,7 +213,7 @@ class BatchProcessor:
             f"Processing {len(jobs_to_process)} jobs with {self.max_workers} workers"
         )
         # Start performance monitoring
-        self.performance_monitor.start_batch_processing()
+        operation_id = self.performance_monitor.start_batch_processing()
         # Process jobs concurrently
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # Submit all jobs
@@ -245,7 +245,7 @@ class BatchProcessor:
                         self._save_resume_state()
         self.progress.end_time = datetime.now()
         # Stop performance monitoring
-        self.performance_monitor.stop_batch_processing()
+        self.performance_monitor.stop_batch_processing(operation_id)
         logger.info(
             f"Batch processing completed: {self.progress.completed_jobs} successful, "
             f"{self.progress.failed_jobs} failed"

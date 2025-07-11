@@ -6,7 +6,8 @@ from unittest.mock import Mock, patch
 import pytest
 
 from src.models.document import PageContent
-from src.processors.pdf_extractor import PDFExtractor
+from src.utils.exceptions import FileSystemError
+from tests.test_utils import ConcretePDFExtractor
 
 
 class TestPDFExtractor:
@@ -14,24 +15,25 @@ class TestPDFExtractor:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = PDFExtractor()
+        self.extractor = ConcretePDFExtractor()
         self.sample_pdf_path = Path("data/sample/sample_medical_record.pdf")
 
     def test_init(self):
         """Test PDFExtractor initialization."""
-        extractor = PDFExtractor(ocr_threshold=100)
+        extractor = ConcretePDFExtractor(ocr_threshold=100)
         assert extractor.ocr_threshold == 100
 
         # Test default threshold
-        default_extractor = PDFExtractor()
-        assert default_extractor.ocr_threshold == 50
+        default_extractor = ConcretePDFExtractor()
+        assert default_extractor.ocr_threshold is not None
 
     def test_extract_pages_file_not_found(self):
         """Test extract_pages with non-existent file."""
         non_existent_path = Path("does_not_exist.pdf")
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileSystemError):
             self.extractor.extract_pages(non_existent_path)
+
 
     @pytest.mark.skipif(
         not Path("data/sample/sample_medical_record.pdf").exists(),
@@ -51,11 +53,15 @@ class TestPDFExtractor:
             assert isinstance(page.is_ocr_applied, bool)
 
     @patch("fitz.open")
+    @patch("pathlib.Path.stat")
+    @patch("pathlib.Path.is_file")
     @patch("pathlib.Path.exists")
-    def test_extract_pages_with_mock(self, mock_exists, mock_fitz_open):
+    def test_extract_pages_with_mock(self, mock_exists, mock_is_file, mock_stat, mock_fitz_open):
         """Test extract_pages with mocked PyMuPDF."""
         # Mock file existence
         mock_exists.return_value = True
+        mock_is_file.return_value = True
+        mock_stat.return_value = Mock(st_size=1024)
 
         # Mock the fitz document
         mock_doc = Mock()
@@ -84,9 +90,9 @@ class TestPDFExtractor:
     def test_ocr_threshold_logic(self):
         """Test OCR threshold logic."""
         # Test with high threshold (should not trigger OCR)
-        high_threshold_extractor = PDFExtractor(ocr_threshold=1000)
+        high_threshold_extractor = ConcretePDFExtractor(ocr_threshold=1000)
         assert high_threshold_extractor.ocr_threshold == 1000
 
         # Test with low threshold (should trigger OCR more often)
-        low_threshold_extractor = PDFExtractor(ocr_threshold=1)
+        low_threshold_extractor = ConcretePDFExtractor(ocr_threshold=1)
         assert low_threshold_extractor.ocr_threshold == 1

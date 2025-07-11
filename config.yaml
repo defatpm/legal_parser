@@ -21,7 +21,7 @@ processing:
   # Memory settings
   memory:
     # Maximum memory usage per document in MB
-    max_memory_per_doc_mb: 512
+    max_memory_per_doc_mb: 1024
     # Enable memory monitoring
     enable_monitoring: true
 

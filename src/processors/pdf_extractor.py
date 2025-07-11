@@ -36,7 +36,6 @@ from .base import (
     ProcessingContext,
     ProcessingResult,
     ProcessorMetadata,
-    register_processor,
 )
 
 logger = logging.getLogger(__name__)
@@ -419,4 +418,4 @@ class PDFExtractor(BaseProcessor):
 
 
 # Register the processor
-register_processor(PDFExtractor)
+# register_processor(PDFExtractor)

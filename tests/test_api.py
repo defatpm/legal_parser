@@ -13,9 +13,21 @@ from fastapi.testclient import TestClient
 from src.api.main import app
 from src.api.models import ProcessingRequest, ProcessingStatus
 from src.api.tasks import TaskInfo, TaskManager
+from src.processors.base import get_processor_registry
+from tests.test_utils import ConcretePDFExtractor
 
 # Test client
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def register_test_processor():
+    """Register a test processor for the API tests."""
+    registry = get_processor_registry()
+    registry.register(ConcretePDFExtractor)
+    yield
+    registry.clear()
+
 
 
 @pytest.fixture
@@ -114,12 +126,7 @@ class TestAPIEndpoints:
         """Test system metrics endpoint."""
         response = client.get("/metrics")
         assert response.status_code == 200
-
-        data = response.json()
-        assert "cpu_usage_percent" in data
-        assert "memory_usage_mb" in data
-        assert "memory_available_mb" in data
-        assert "uptime_seconds" in data
+        assert "text/plain" in response.headers["content-type"]
 
     def test_upload_valid_file(self, mock_pdf_file):
         """Test uploading a valid PDF file."""
