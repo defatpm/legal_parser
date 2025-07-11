@@ -16,4 +16,4 @@ This document outlines the plan to fix the syntax error in `src/utils/error_hand
 - [x] Run local tests
 - [x] Lint the code
 - [x] Review CI configuration
-- [ ] Commit the changes
+- [x] Commit the changes
