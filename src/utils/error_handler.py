@@ -230,7 +230,7 @@ def error_context(operation: str, **context):
         raise
 
 
-def safe_execute[T](
+def safe_execute(
     func: Callable[..., T],
     *args,
     default_return: Any | None = None,

@@ -11,7 +11,9 @@ altair==5.5.0
 annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
-    # via starlette
+    # via
+    #   httpx
+    #   starlette
 arrow==1.3.0
     # via -r requirements.in
 attrs==25.3.0
@@ -32,7 +34,10 @@ catalogue==2.0.10
     #   srsly
     #   thinc
 certifi==2025.7.9
-    # via requests
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
 cffi==1.17.1
     # via cryptography
 cfgv==3.4.0
@@ -78,12 +83,19 @@ gitdb==4.0.12
 gitpython==3.1.44
     # via streamlit
 h11==0.16.0
-    # via uvicorn
+    # via
+    #   httpcore
+    #   uvicorn
+httpcore==1.0.9
+    # via httpx
+httpx==0.28.1
+    # via -r requirements.in
 identify==2.6.12
     # via pre-commit
 idna==3.10
     # via
     #   anyio
+    #   httpx
     #   requests
 iniconfig==2.1.0
     # via pytest
@@ -188,6 +200,8 @@ prometheus-fastapi-instrumentator==7.1.0
     # via -r requirements.in
 protobuf==6.31.1
     # via streamlit
+psutil==7.0.0
+    # via -r requirements.in
 pyarrow==20.0.0
     # via streamlit
 pycparser==2.22
