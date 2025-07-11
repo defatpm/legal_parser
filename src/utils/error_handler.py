@@ -7,7 +7,7 @@ import traceback
 from collections.abc import Callable
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union
 
 from .config import get_config
 from .exceptions import (
@@ -32,7 +32,7 @@ class ErrorHandler:
         self.error_counts: dict[str, int] = {}
         self.critical_errors: list[dict[str, Any]] = []
 
-    def handle_error(self, error: Exception, context: dict[str, Any] | None = None) -> dict[str, Any]:
+    def handle_error(self, error: Exception, context: Union[dict[str, Any], None] = None) -> dict[str, Any]:
         """Handle an error with appropriate logging and categorization.
 
         Args:
@@ -112,7 +112,7 @@ def retry_on_error(
     delay: float = 1.0,
     backoff: float = 2.0,
     exceptions: tuple = (Exception,),
-    retryable_check: Callable[[Exception], bool] | None = None
+    retryable_check: Union[Callable[[Exception], bool], None] = None
 ) -> Callable:
     """Decorator for retrying functions on specific exceptions.
 
@@ -166,7 +166,7 @@ def retry_on_error(
 
 
 def handle_exceptions(
-    default_return: Any | None = None,
+    default_return: Union[Any, None] = None,
     exceptions: tuple = (Exception,),
     log_level: str = "ERROR",
     reraise: bool = True
@@ -182,9 +182,9 @@ def handle_exceptions(
     Returns:
         Decorator function
     """
-    def decorator(func: Callable[..., T]) -> Callable[..., T | Any]:
+    def decorator(func: Callable[..., T]) -> Callable[..., Union[T, Any]]:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> T | Any:
+        def wrapper(*args, **kwargs) -> Union[T, Any]:
             try:
                 return func(*args, **kwargs)
             except exceptions as e:
@@ -233,10 +233,10 @@ def error_context(operation: str, **context):
 def safe_execute(
     func: Callable[..., T],
     *args,
-    default_return: Any | None = None,
+    default_return: Union[Any, None] = None,
     max_retries: int = 0,
     **kwargs
-) -> T | Any:
+) -> Union[T, Any]:
     """Safely execute a function with error handling and optional retries.
 
     Args:
@@ -273,7 +273,7 @@ def validate_input(
     value: Any,
     validator: Callable[[Any], bool],
     error_message: str,
-    field_name: str | None = None
+    field_name: Union[str, None] = None
 ) -> None:
     """Validate input value with custom validator.
 
@@ -296,9 +296,9 @@ def validate_input(
 
 
 def check_resource_limits(
-    memory_mb: float | None = None,
-    disk_space_mb: float | None = None,
-    timeout_seconds: float | None = None
+    memory_mb: Union[float, None] = None,
+    disk_space_mb: Union[float, None] = None,
+    timeout_seconds: Union[float, None] = None
 ) -> None:
     """Check resource limits and raise appropriate errors.
 
