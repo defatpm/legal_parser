@@ -1,4 +1,5 @@
 """Tests for the REST API."""
+
 from __future__ import annotations
 
 import io
@@ -33,7 +34,7 @@ def processing_request():
         normalize_whitespace=True,
         min_text_length=10,
         output_format="json",
-        include_metadata=True
+        include_metadata=True,
     )
 
 
@@ -154,7 +155,7 @@ class TestAPIEndpoints:
             "normalize_whitespace": True,
             "min_text_length": 10,
             "output_format": "json",
-            "include_metadata": True
+            "include_metadata": True,
         }
 
         response = client.post("/process", files=files, data=data)
@@ -202,7 +203,7 @@ class TestProcessingModels:
             normalize_whitespace=True,
             min_text_length=10,
             output_format="json",
-            include_metadata=True
+            include_metadata=True,
         )
 
         assert request.ocr_enabled is True
@@ -239,7 +240,7 @@ class TestTaskManager:
     @pytest.fixture
     def mock_file_path(self):
         """Create a mock file path."""
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(b"%PDF-1.4\nTest content")
             return Path(tmp.name)
 
@@ -251,9 +252,13 @@ class TestTaskManager:
         assert task_manager.running is False
 
     @pytest.mark.asyncio
-    async def test_task_submission(self, task_manager, mock_file_path, processing_request):
+    async def test_task_submission(
+        self, task_manager, mock_file_path, processing_request
+    ):
         """Test task submission."""
-        task_id = await task_manager.submit_task("test.pdf", mock_file_path, processing_request)
+        task_id = await task_manager.submit_task(
+            "test.pdf", mock_file_path, processing_request
+        )
 
         assert task_id in task_manager.tasks
         task_info = task_manager.tasks[task_id]
@@ -265,9 +270,13 @@ class TestTaskManager:
         mock_file_path.unlink()
 
     @pytest.mark.asyncio
-    async def test_task_status_retrieval(self, task_manager, mock_file_path, processing_request):
+    async def test_task_status_retrieval(
+        self, task_manager, mock_file_path, processing_request
+    ):
         """Test task status retrieval."""
-        task_id = await task_manager.submit_task("test.pdf", mock_file_path, processing_request)
+        task_id = await task_manager.submit_task(
+            "test.pdf", mock_file_path, processing_request
+        )
 
         task_info = await task_manager.get_task_status(task_id)
         assert task_info is not None
@@ -282,9 +291,13 @@ class TestTaskManager:
         mock_file_path.unlink()
 
     @pytest.mark.asyncio
-    async def test_task_cancellation(self, task_manager, mock_file_path, processing_request):
+    async def test_task_cancellation(
+        self, task_manager, mock_file_path, processing_request
+    ):
         """Test task cancellation."""
-        task_id = await task_manager.submit_task("test.pdf", mock_file_path, processing_request)
+        task_id = await task_manager.submit_task(
+            "test.pdf", mock_file_path, processing_request
+        )
 
         # Cancel task
         success = await task_manager.cancel_task(task_id)
@@ -330,10 +343,14 @@ class TestTaskManager:
         assert "total_pages_processed" in stats
 
     @pytest.mark.asyncio
-    async def test_cleanup_old_tasks(self, task_manager, mock_file_path, processing_request):
+    async def test_cleanup_old_tasks(
+        self, task_manager, mock_file_path, processing_request
+    ):
         """Test cleanup of old tasks."""
         # Submit and cancel a task
-        task_id = await task_manager.submit_task("test.pdf", mock_file_path, processing_request)
+        task_id = await task_manager.submit_task(
+            "test.pdf", mock_file_path, processing_request
+        )
         await task_manager.cancel_task(task_id)
 
         # Initially task should exist
@@ -360,7 +377,7 @@ class TestTaskInfo:
             file_path=Path("test.pdf"),
             request=processing_request,
             status=ProcessingStatus.PENDING,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
         assert task_info.task_id == "test-task-id"
@@ -380,7 +397,7 @@ class TestTaskInfo:
             status=ProcessingStatus.COMPLETED,
             created_at=datetime.now(),
             progress=1.0,
-            processing_time=5.0
+            processing_time=5.0,
         )
 
         task_dict = task_info.to_dict()
@@ -446,7 +463,7 @@ class TestIntegration:
             "normalize_whitespace": True,
             "min_text_length": 10,
             "output_format": "json",
-            "include_metadata": True
+            "include_metadata": True,
         }
 
         process_response = client.post(f"/process/{upload_id}", json=process_data)

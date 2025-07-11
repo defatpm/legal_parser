@@ -1,4 +1,5 @@
 """Tests for error handling and recovery mechanisms."""
+
 from __future__ import annotations
 
 import pytest
@@ -31,7 +32,9 @@ class TestCustomExceptions:
 
     def test_medical_processor_error_base(self):
         """Test base MedicalProcessorError."""
-        error = MedicalProcessorError("Test error", error_code="TEST_ERROR", details={"key": "value"})
+        error = MedicalProcessorError(
+            "Test error", error_code="TEST_ERROR", details={"key": "value"}
+        )
 
         assert str(error) == "Test error"
         assert error.error_code == "TEST_ERROR"
@@ -46,9 +49,7 @@ class TestCustomExceptions:
     def test_pdf_processing_error(self):
         """Test PDFProcessingError with specific details."""
         error = PDFProcessingError(
-            "PDF processing failed",
-            pdf_path="/path/to/file.pdf",
-            page_number=5
+            "PDF processing failed", pdf_path="/path/to/file.pdf", page_number=5
         )
 
         assert error.error_code == "PDF_ERROR"
@@ -66,9 +67,7 @@ class TestCustomExceptions:
     def test_validation_error(self):
         """Test ValidationError with field information."""
         error = ValidationError(
-            "Invalid input",
-            field_name="file_size",
-            field_value="too_large"
+            "Invalid input", field_name="file_size", field_value="too_large"
         )
 
         assert error.error_code == "VALIDATION_ERROR"
@@ -269,6 +268,7 @@ class TestHandleExceptionsDecorator:
 
     def test_handle_exceptions_with_default_return(self):
         """Test exception handling with default return value."""
+
         @handle_exceptions(default_return="fallback", reraise=False)
         def test_func():
             raise ValueError("Test error")
@@ -278,6 +278,7 @@ class TestHandleExceptionsDecorator:
 
     def test_handle_exceptions_with_reraise(self):
         """Test exception handling with reraise."""
+
         @handle_exceptions(default_return="fallback", reraise=True)
         def test_func():
             raise ValueError("Test error")
@@ -287,6 +288,7 @@ class TestHandleExceptionsDecorator:
 
     def test_handle_exceptions_success(self):
         """Test successful execution with exception handler."""
+
         @handle_exceptions(default_return="fallback")
         def test_func():
             return "success"
@@ -321,6 +323,7 @@ class TestSafeExecute:
 
     def test_safe_execute_success(self):
         """Test safe_execute with successful function."""
+
         def test_func(x, y):
             return x + y
 
@@ -329,6 +332,7 @@ class TestSafeExecute:
 
     def test_safe_execute_with_error(self):
         """Test safe_execute with error and default return."""
+
         def test_func():
             raise ValueError("Test error")
 
@@ -356,6 +360,7 @@ class TestValidateInput:
 
     def test_validate_input_success(self):
         """Test successful input validation."""
+
         def is_positive(x):
             return x > 0
 
@@ -364,6 +369,7 @@ class TestValidateInput:
 
     def test_validate_input_failure(self):
         """Test failed input validation."""
+
         def is_positive(x):
             return x > 0
 
@@ -405,6 +411,7 @@ class TestGracefulDegradation:
 
     def test_graceful_degradation_primary_success(self):
         """Test successful primary function execution."""
+
         def primary_func(x):
             return x * 2
 
@@ -416,6 +423,7 @@ class TestGracefulDegradation:
 
     def test_graceful_degradation_fallback_success(self):
         """Test fallback function execution after primary fails."""
+
         def primary_func(x):
             raise ValueError("Primary failed")
 
@@ -427,6 +435,7 @@ class TestGracefulDegradation:
 
     def test_graceful_degradation_both_fail(self):
         """Test when both primary and fallback fail."""
+
         def primary_func(x):
             raise ValueError("Primary failed")
 

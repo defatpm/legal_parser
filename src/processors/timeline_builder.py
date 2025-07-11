@@ -1,4 +1,5 @@
 """Timeline building and intelligent chunking."""
+
 from __future__ import annotations
 
 import logging
@@ -24,11 +25,13 @@ class TimelineBuilder:
         self.max_chunk_tokens = max_chunk_tokens
         self._ensure_nltk_data()
 
-    def build_timeline(self,
-                      segments: list[DocumentSegment],
-                      document_id: str,
-                      original_filename: str,
-                      total_pages: int) -> ProcessedDocument:
+    def build_timeline(
+        self,
+        segments: list[DocumentSegment],
+        document_id: str,
+        original_filename: str,
+        total_pages: int,
+    ) -> ProcessedDocument:
         """Build chronological timeline from segments.
 
         Args:
@@ -54,11 +57,13 @@ class TimelineBuilder:
             processing_date=datetime.now(),
             segments=chunked_segments,
             date_range=date_range,
-            total_segments=len(chunked_segments)
+            total_segments=len(chunked_segments),
         )
         return processed_doc
 
-    def _sort_segments_chronologically(self, segments: list[DocumentSegment]) -> list[DocumentSegment]:
+    def _sort_segments_chronologically(
+        self, segments: list[DocumentSegment]
+    ) -> list[DocumentSegment]:
         """Sort segments by date of service.
 
         Args:
@@ -97,7 +102,9 @@ class TimelineBuilder:
             chunked_segments.append(segment)
         return chunked_segments
 
-    def _split_segment_into_chunks(self, segment: DocumentSegment) -> list[DocumentChunk]:
+    def _split_segment_into_chunks(
+        self, segment: DocumentSegment
+    ) -> list[DocumentChunk]:
         """Split a segment into smaller chunks.
 
         Args:
@@ -114,7 +121,10 @@ class TimelineBuilder:
         chunk_index = 0
         for sentence in sentences:
             sentence_tokens = len(sentence) // 4  # Rough token estimation
-            if current_tokens + sentence_tokens > self.max_chunk_tokens and current_chunk:
+            if (
+                current_tokens + sentence_tokens > self.max_chunk_tokens
+                and current_chunk
+            ):
                 # Create chunk from current sentences
                 chunk_text = " ".join(current_chunk)
                 chunk = DocumentChunk(
@@ -122,7 +132,7 @@ class TimelineBuilder:
                     parent_segment_id=segment.segment_id,
                     text_content=chunk_text,
                     token_count=current_tokens,
-                    chunk_index=chunk_index
+                    chunk_index=chunk_index,
                 )
                 chunks.append(chunk)
                 # Start new chunk
@@ -140,12 +150,14 @@ class TimelineBuilder:
                 parent_segment_id=segment.segment_id,
                 text_content=chunk_text,
                 token_count=current_tokens,
-                chunk_index=chunk_index
+                chunk_index=chunk_index,
             )
             chunks.append(chunk)
         return chunks
 
-    def _calculate_date_range(self, segments: list[DocumentSegment]) -> tuple[datetime, datetime] | None:
+    def _calculate_date_range(
+        self, segments: list[DocumentSegment]
+    ) -> tuple[datetime, datetime] | None:
         """Calculate date range for the document.
 
         Args:
@@ -162,7 +174,7 @@ class TimelineBuilder:
     def _ensure_nltk_data(self) -> None:
         """Ensure required NLTK data is available."""
         try:
-            nltk.data.find('tokenizers/punkt')
+            nltk.data.find("tokenizers/punkt")
         except LookupError:
             logger.info("Downloading NLTK punkt tokenizer...")
-            nltk.download('punkt', quiet=True)
+            nltk.download("punkt", quiet=True)

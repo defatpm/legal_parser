@@ -1,4 +1,5 @@
 """Tests for the batch processor module."""
+
 import json
 import tempfile
 import time
@@ -16,9 +17,7 @@ class TestBatchJob:
     def test_batch_job_creation(self):
         """Test creating a batch job."""
         job = BatchJob(
-            id="test-job",
-            input_path=Path("test.pdf"),
-            output_path=Path("test.json")
+            id="test-job", input_path=Path("test.pdf"), output_path=Path("test.json")
         )
 
         assert job.id == "test-job"
@@ -32,9 +31,7 @@ class TestBatchJob:
         from datetime import datetime
 
         job = BatchJob(
-            id="test-job",
-            input_path=Path("test.pdf"),
-            output_path=Path("test.json")
+            id="test-job", input_path=Path("test.pdf"), output_path=Path("test.json")
         )
 
         # Set start and end times
@@ -60,10 +57,7 @@ class TestBatchProgress:
     def test_batch_progress_rates(self):
         """Test progress rate calculations."""
         progress = BatchProgress(
-            total_jobs=10,
-            completed_jobs=7,
-            failed_jobs=2,
-            processing_jobs=1
+            total_jobs=10, completed_jobs=7, failed_jobs=2, processing_jobs=1
         )
 
         assert progress.pending_jobs == 0
@@ -73,11 +67,7 @@ class TestBatchProgress:
 
     def test_batch_progress_completion(self):
         """Test completion detection."""
-        progress = BatchProgress(
-            total_jobs=10,
-            completed_jobs=8,
-            failed_jobs=2
-        )
+        progress = BatchProgress(total_jobs=10, completed_jobs=8, failed_jobs=2)
 
         assert progress.is_complete
 
@@ -86,10 +76,7 @@ class TestBatchProgress:
         from datetime import datetime, timedelta
 
         progress = BatchProgress(
-            total_jobs=10,
-            completed_jobs=5,
-            failed_jobs=0,
-            processing_jobs=1
+            total_jobs=10, completed_jobs=5, failed_jobs=0, processing_jobs=1
         )
 
         # Set start time to 10 minutes ago
@@ -113,11 +100,7 @@ class TestBatchProcessor:
             input_dir.mkdir()
             output_dir.mkdir()
 
-            yield {
-                "temp": temp_path,
-                "input": input_dir,
-                "output": output_dir
-            }
+            yield {"temp": temp_path, "input": input_dir, "output": output_dir}
 
     @pytest.fixture
     def sample_pdf_files(self, temp_dirs):
@@ -181,7 +164,7 @@ class TestBatchProcessor:
         processor.add_directory(
             input_dir=temp_dirs["input"],
             output_dir=temp_dirs["output"],
-            recursive=False
+            recursive=False,
         )
 
         # Should find 5 files in root directory (not recursive)
@@ -193,9 +176,7 @@ class TestBatchProcessor:
         processor = BatchProcessor()
 
         processor.add_directory(
-            input_dir=temp_dirs["input"],
-            output_dir=temp_dirs["output"],
-            recursive=True
+            input_dir=temp_dirs["input"], output_dir=temp_dirs["output"], recursive=True
         )
 
         # Should find 8 files total (5 in root + 3 in subdir)
@@ -214,7 +195,7 @@ class TestBatchProcessor:
         processor.add_directory(
             input_dir=temp_dirs["input"],
             output_dir=temp_dirs["output"],
-            pattern="*.pdf"
+            pattern="*.pdf",
         )
 
         # Should only find PDF files
@@ -228,11 +209,10 @@ class TestBatchProcessor:
 
         with pytest.raises(FileNotFoundError):
             processor.add_directory(
-                input_dir=nonexistent_dir,
-                output_dir=temp_dirs["output"]
+                input_dir=nonexistent_dir, output_dir=temp_dirs["output"]
             )
 
-    @patch('src.batch_processor.PDFProcessor')
+    @patch("src.batch_processor.PDFProcessor")
     def test_process_batch_success(self, mock_pdf_processor, temp_dirs):
         """Test successful batch processing."""
         # Mock the PDF processor
@@ -242,11 +222,15 @@ class TestBatchProcessor:
         # Mock successful processing
         def mock_process_pdf(input_path, output_path):
             # Create mock output file
-            output_path.write_text(json.dumps({
-                "page_count": 5,
-                "segments": [{"text": "segment1"}, {"text": "segment2"}],
-                "timeline": [{"event": "event1"}]
-            }))
+            output_path.write_text(
+                json.dumps(
+                    {
+                        "page_count": 5,
+                        "segments": [{"text": "segment1"}, {"text": "segment2"}],
+                        "timeline": [{"event": "event1"}],
+                    }
+                )
+            )
             return output_path
 
         mock_processor_instance.process_pdf.side_effect = mock_process_pdf
@@ -276,7 +260,7 @@ class TestBatchProcessor:
             assert job.status == "completed"
             assert job.result is not None
 
-    @patch('src.batch_processor.PDFProcessor')
+    @patch("src.batch_processor.PDFProcessor")
     def test_process_batch_with_failures(self, mock_pdf_processor, temp_dirs):
         """Test batch processing with some failures."""
         # Mock the PDF processor
@@ -289,11 +273,15 @@ class TestBatchProcessor:
                 raise Exception("Processing failed")
 
             # Create mock output file for successful cases
-            output_path.write_text(json.dumps({
-                "page_count": 3,
-                "segments": [{"text": "segment1"}],
-                "timeline": [{"event": "event1"}]
-            }))
+            output_path.write_text(
+                json.dumps(
+                    {
+                        "page_count": 3,
+                        "segments": [{"text": "segment1"}],
+                        "timeline": [{"event": "event1"}],
+                    }
+                )
+            )
             return output_path
 
         mock_processor_instance.process_pdf.side_effect = mock_process_pdf
@@ -315,7 +303,7 @@ class TestBatchProcessor:
         # Verify results
         assert statistics.total_jobs == 5
         assert statistics.successful_jobs == 2  # Only success files
-        assert statistics.failed_jobs == 3    # Only fail files
+        assert statistics.failed_jobs == 3  # Only fail files
         assert len(statistics.errors) == 3
 
         # Verify job statuses
@@ -385,16 +373,14 @@ class TestBatchProcessor:
         processor.add_file(input_file, output_file)
 
         # Mock the processing to be very fast
-        with patch('src.batch_processor.PDFProcessor') as mock_pdf_processor:
+        with patch("src.batch_processor.PDFProcessor") as mock_pdf_processor:
             mock_processor_instance = Mock()
             mock_pdf_processor.return_value = mock_processor_instance
 
             def mock_process_pdf(input_path, output_path):
-                output_path.write_text(json.dumps({
-                    "page_count": 1,
-                    "segments": [],
-                    "timeline": []
-                }))
+                output_path.write_text(
+                    json.dumps({"page_count": 1, "segments": [], "timeline": []})
+                )
                 return output_path
 
             mock_processor_instance.process_pdf.side_effect = mock_process_pdf
@@ -466,7 +452,7 @@ class TestBatchStatistics:
             throughput_jobs_per_minute=1.6,
             throughput_pages_per_minute=16.0,
             memory_usage_mb=256.0,
-            errors=["Error 1", "Error 2"]
+            errors=["Error 1", "Error 2"],
         )
 
         assert stats.total_jobs == 10
@@ -492,7 +478,7 @@ class TestBatchProcessorIntegration:
         # This test would require actual PDF processing
         # For now, we'll mock it but structure it as a real workflow
 
-        with patch('src.batch_processor.PDFProcessor') as mock_pdf_processor:
+        with patch("src.batch_processor.PDFProcessor") as mock_pdf_processor:
             # Setup mock
             mock_processor_instance = Mock()
             mock_pdf_processor.return_value = mock_processor_instance
@@ -502,19 +488,23 @@ class TestBatchProcessorIntegration:
                 time.sleep(0.01)
 
                 # Create realistic output
-                output_path.write_text(json.dumps({
-                    "document_id": "test-doc",
-                    "filename": input_path.name,
-                    "page_count": 5,
-                    "segments": [
-                        {"text": "Sample segment", "type": "medical"},
-                        {"text": "Another segment", "type": "diagnosis"}
-                    ],
-                    "timeline": [
-                        {"date": "2023-01-01", "event": "Event 1"},
-                        {"date": "2023-01-02", "event": "Event 2"}
-                    ]
-                }))
+                output_path.write_text(
+                    json.dumps(
+                        {
+                            "document_id": "test-doc",
+                            "filename": input_path.name,
+                            "page_count": 5,
+                            "segments": [
+                                {"text": "Sample segment", "type": "medical"},
+                                {"text": "Another segment", "type": "diagnosis"},
+                            ],
+                            "timeline": [
+                                {"date": "2023-01-01", "event": "Event 1"},
+                                {"date": "2023-01-02", "event": "Event 2"},
+                            ],
+                        }
+                    )
+                )
                 return output_path
 
             mock_processor_instance.process_pdf.side_effect = mock_process_pdf
@@ -527,8 +517,7 @@ class TestBatchProcessorIntegration:
             # Setup batch processor
             processor = BatchProcessor(max_workers=2)
             processor.add_directory(
-                input_dir=temp_dirs["input"],
-                output_dir=temp_dirs["output"]
+                input_dir=temp_dirs["input"], output_dir=temp_dirs["output"]
             )
 
             # Process batch

@@ -26,9 +26,7 @@ class PDFProcessor:
         self.metadata_extractor = MetadataExtractor()
         self.timeline_builder = TimelineBuilder()
 
-    def process_pdf(self,
-                   pdf_path: Path,
-                   output_path: Path | None = None) -> Path:
+    def process_pdf(self, pdf_path: Path, output_path: Path | None = None) -> Path:
         """Process a PDF file through the complete pipeline.
 
         Args:
@@ -59,10 +57,7 @@ class PDFProcessor:
         logger.info("Step 4: Building chronological timeline...")
         document_id = str(uuid4())
         processed_doc = self.timeline_builder.build_timeline(
-            enriched_segments,
-            document_id,
-            pdf_path.name,
-            len(pages)
+            enriched_segments, document_id, pdf_path.name, len(pages)
         )
         # Step 5: Save results
         if output_path is None:
@@ -71,6 +66,7 @@ class PDFProcessor:
             filename = template.format(stem=pdf_path.stem)
             if self.config.output.naming["include_timestamp"]:
                 from datetime import datetime
+
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = f"{filename}_{timestamp}"
             output_path = pdf_path.parent / f"{filename}.json"
@@ -88,12 +84,12 @@ class PDFProcessor:
         """
         # Use configured JSON output settings
         json_config = self.config.output.json
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(
                 processed_doc.to_dict(),
                 f,
                 indent=json_config["indent"] if json_config["pretty_print"] else None,
-                ensure_ascii=json_config["ensure_ascii"]
+                ensure_ascii=json_config["ensure_ascii"],
             )
 
 
@@ -106,83 +102,62 @@ def main() -> None:
     )
     # Input arguments
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        "--input",
-        type=Path,
-        help="Path to input PDF file"
-    )
+    group.add_argument("--input", type=Path, help="Path to input PDF file")
     group.add_argument(
         "--input-dir",
         type=Path,
-        help="Directory containing PDF files for batch processing"
+        help="Directory containing PDF files for batch processing",
     )
     # Output arguments
     parser.add_argument(
         "--output",
         type=Path,
-        help="Path to output JSON file (single file) or directory (batch)"
+        help="Path to output JSON file (single file) or directory (batch)",
     )
     parser.add_argument(
-        "--csv-output",
-        type=Path,
-        help="Path to output CSV files (batch mode only)"
+        "--csv-output", type=Path, help="Path to output CSV files (batch mode only)"
     )
     parser.add_argument(
-        "--excel-output",
-        type=Path,
-        help="Path to output Excel files (batch mode only)"
+        "--excel-output", type=Path, help="Path to output Excel files (batch mode only)"
     )
     # Batch processing arguments
     parser.add_argument(
-        "--batch",
-        action="store_true",
-        help="Enable batch processing mode"
+        "--batch", action="store_true", help="Enable batch processing mode"
     )
     parser.add_argument(
-        "--workers",
-        type=int,
-        help="Number of concurrent workers for batch processing"
+        "--workers", type=int, help="Number of concurrent workers for batch processing"
     )
     parser.add_argument(
         "--recursive",
         action="store_true",
-        help="Search subdirectories recursively (batch mode)"
+        help="Search subdirectories recursively (batch mode)",
     )
     parser.add_argument(
         "--pattern",
         type=str,
         default="*.pdf",
-        help="File pattern to match (default: *.pdf)"
+        help="File pattern to match (default: *.pdf)",
     )
     parser.add_argument(
-        "--resume",
-        action="store_true",
-        help="Resume interrupted batch processing"
+        "--resume", action="store_true", help="Resume interrupted batch processing"
     )
     parser.add_argument(
         "--resume-file",
         type=Path,
-        help="Path to resume file (default: .batch_resume.json)"
+        help="Path to resume file (default: .batch_resume.json)",
     )
     # Other arguments
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
     parser.add_argument(
         "--progress",
         action="store_true",
-        help="Show progress bar during batch processing"
+        help="Show progress bar during batch processing",
     )
     args = parser.parse_args()
     # Setup logging with configuration
     config = get_config()
     level = logging.DEBUG if args.verbose else getattr(logging, config.logging.level)
-    logging.basicConfig(
-        level=level,
-        format=config.logging.format
-    )
+    logging.basicConfig(level=level, format=config.logging.format)
     try:
         if args.batch or args.input_dir:
             # Batch processing mode
@@ -219,8 +194,7 @@ def _process_batch(args) -> None:
         progress_callback = _print_progress
     # Create batch processor
     batch_processor = BatchProcessor(
-        max_workers=args.workers,
-        progress_callback=progress_callback
+        max_workers=args.workers, progress_callback=progress_callback
     )
     # Setup resume file
     resume_file = args.resume_file or (input_dir / ".batch_resume.json")
@@ -236,7 +210,7 @@ def _process_batch(args) -> None:
             input_dir=input_dir,
             output_dir=output_dir,
             pattern=args.pattern,
-            recursive=args.recursive
+            recursive=args.recursive,
         )
     print(f"Starting batch processing of {len(batch_processor.jobs)} files...")
     print(f"Input directory: {input_dir}")
@@ -273,46 +247,58 @@ def _process_batch(args) -> None:
         args.csv_output.mkdir(parents=True, exist_ok=True)
         from .models.document import DocumentSegment
         from .utils.output_formatter import to_csv_string
+
         for job in batch_processor.jobs:
             if job.status == "completed":
                 try:
-                    with open(job.output_path, encoding='utf-8') as f:
+                    with open(job.output_path, encoding="utf-8") as f:
                         data = json.load(f)
-                    segments_data = data.get('segments', [])
+                    segments_data = data.get("segments", [])
                     if segments_data:
                         segments = [DocumentSegment(**s) for s in segments_data]
                         csv_str = to_csv_string(segments)
-                        csv_path = args.csv_output / f"{job.input_path.stem}_segments.csv"
-                        with open(csv_path, 'w', encoding='utf-8') as f:
+                        csv_path = (
+                            args.csv_output / f"{job.input_path.stem}_segments.csv"
+                        )
+                        with open(csv_path, "w", encoding="utf-8") as f:
                             f.write(csv_str)
                 except Exception as e:
-                    logger.error(f"Failed to generate CSV for {job.input_path.name}: {e}")
+                    logger.error(
+                        f"Failed to generate CSV for {job.input_path.name}: {e}"
+                    )
     # Export to Excel if requested
     if args.excel_output:
         print(f"\nExporting Excel files to: {args.excel_output}")
         args.excel_output.mkdir(parents=True, exist_ok=True)
         from .models.document import DocumentSegment
         from .utils.output_formatter import to_excel
+
         for job in batch_processor.jobs:
             if job.status == "completed":
                 try:
-                    with open(job.output_path, encoding='utf-8') as f:
+                    with open(job.output_path, encoding="utf-8") as f:
                         data = json.load(f)
-                    segments_data = data.get('segments', [])
+                    segments_data = data.get("segments", [])
                     if segments_data:
                         segments = [DocumentSegment(**s) for s in segments_data]
                         excel_data = to_excel(segments)
-                        excel_path = args.excel_output / f"{job.input_path.stem}_segments.xlsx"
-                        with open(excel_path, 'wb') as f:
+                        excel_path = (
+                            args.excel_output / f"{job.input_path.stem}_segments.xlsx"
+                        )
+                        with open(excel_path, "wb") as f:
                             f.write(excel_data)
                 except Exception as e:
-                    logger.error(f"Failed to generate Excel for {job.input_path.name}: {e}")
+                    logger.error(
+                        f"Failed to generate Excel for {job.input_path.name}: {e}"
+                    )
     # Clean up resume file if processing completed successfully
     if statistics.failed_jobs == 0 and resume_file.exists():
         resume_file.unlink()
         print(f"\nResume file cleaned up: {resume_file}")
     elif statistics.failed_jobs > 0:
-        print(f"\nFailed jobs can be retried using: --resume --resume-file {resume_file}")
+        print(
+            f"\nFailed jobs can be retried using: --resume --resume-file {resume_file}"
+        )
     print("=" * 60)
 
 
@@ -321,15 +307,19 @@ def _print_progress(progress) -> None:
     percentage = progress.completion_rate
     bar_length = 50
     filled_length = int(bar_length * percentage / 100)
-    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+    bar = "█" * filled_length + "-" * (bar_length - filled_length)
     eta_str = ""
     if progress.eta_seconds:
         eta_minutes = int(progress.eta_seconds / 60)
         eta_seconds = int(progress.eta_seconds % 60)
         eta_str = f" ETA: {eta_minutes:02d}:{eta_seconds:02d}"
-    print(f"\rProgress: |{bar}| {percentage:.1f}% "
-          f"({progress.completed_jobs}/{progress.total_jobs})"
-          f"{eta_str}", end='', flush=True)
+    print(
+        f"\rProgress: |{bar}| {percentage:.1f}% "
+        f"({progress.completed_jobs}/{progress.total_jobs})"
+        f"{eta_str}",
+        end="",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

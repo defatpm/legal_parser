@@ -1,4 +1,5 @@
 """Tests for configuration management."""
+
 from __future__ import annotations
 
 import tempfile
@@ -30,23 +31,12 @@ class TestConfigManager:
         """Test loading configuration from YAML file."""
         # Create temporary config file
         config_data = {
-            "app": {
-                "name": "Test Processor",
-                "version": "1.0.0",
-                "debug": True
-            },
-            "processing": {
-                "max_file_size_mb": 200
-            },
-            "pdf_extraction": {
-                "ocr": {
-                    "enabled": False,
-                    "language": "spa"
-                }
-            }
+            "app": {"name": "Test Processor", "version": "1.0.0", "debug": True},
+            "processing": {"max_file_size_mb": 200},
+            "pdf_extraction": {"ocr": {"enabled": False, "language": "spa"}},
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(config_data, f)
             temp_path = Path(f.name)
 
@@ -72,13 +62,9 @@ class TestConfigManager:
     def test_config_validation(self):
         """Test configuration validation."""
         # Test invalid file size
-        config_data = {
-            "processing": {
-                "max_file_size_mb": -1
-            }
-        }
+        config_data = {"processing": {"max_file_size_mb": -1}}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(config_data, f)
             temp_path = Path(f.name)
 
@@ -91,7 +77,7 @@ class TestConfigManager:
 
     def test_invalid_yaml_file(self):
         """Test handling of invalid YAML file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: content: [")
             temp_path = Path(f.name)
 
@@ -124,13 +110,9 @@ class TestConfigManager:
 
     def test_config_reload(self):
         """Test configuration reload functionality."""
-        config_data = {
-            "app": {
-                "name": "Original Name"
-            }
-        }
+        config_data = {"app": {"name": "Original Name"}}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(config_data, f)
             temp_path = Path(f.name)
 
@@ -141,7 +123,7 @@ class TestConfigManager:
 
             # Update config file
             config_data["app"]["name"] = "Updated Name"
-            with open(temp_path, 'w') as f:
+            with open(temp_path, "w") as f:
                 yaml.dump(config_data, f)
 
             # Reload should pick up changes
@@ -153,18 +135,14 @@ class TestConfigManager:
 
     def test_environment_variable_config_path(self):
         """Test using environment variable for config path."""
-        config_data = {
-            "app": {
-                "name": "Env Config"
-            }
-        }
+        config_data = {"app": {"name": "Env Config"}}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(config_data, f)
             temp_path = Path(f.name)
 
         try:
-            with patch.dict('os.environ', {'MEDICAL_PROCESSOR_CONFIG': str(temp_path)}):
+            with patch.dict("os.environ", {"MEDICAL_PROCESSOR_CONFIG": str(temp_path)}):
                 manager = ConfigManager()
                 config = manager.load_config()
                 assert config.app.name == "Env Config"
@@ -187,13 +165,9 @@ class TestGlobalConfig:
         """Test setting global config path."""
         from src.utils.config import set_config_path
 
-        config_data = {
-            "app": {
-                "name": "Global Config Test"
-            }
-        }
+        config_data = {"app": {"name": "Global Config Test"}}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(config_data, f)
             temp_path = Path(f.name)
 

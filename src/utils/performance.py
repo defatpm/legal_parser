@@ -1,4 +1,5 @@
 """Performance monitoring and optimization utilities."""
+
 from __future__ import annotations
 
 import logging
@@ -17,12 +18,13 @@ from .exceptions import ProcessingTimeoutError, ResourceExhaustedError
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class PerformanceMetrics:
     """Performance metrics for a processing operation."""
+
     operation_name: str
     start_time: float
     end_time: float | None = None
@@ -54,7 +56,7 @@ class PerformanceMetrics:
             "cpu_percent": self.cpu_percent,
             "items_processed": self.items_processed,
             "throughput": self.throughput,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
@@ -69,7 +71,9 @@ class PerformanceMonitor:
         self._lock = threading.Lock()
         self._monitoring_enabled = self.config.performance.cache["enabled"]
 
-    def start_operation(self, operation_name: str, metadata: dict[str, Any] | None = None) -> str:
+    def start_operation(
+        self, operation_name: str, metadata: dict[str, Any] | None = None
+    ) -> str:
         """Start monitoring an operation.
 
         Args:
@@ -85,7 +89,7 @@ class PerformanceMonitor:
         metrics = PerformanceMetrics(
             operation_name=operation_name,
             start_time=time.time(),
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
         # Get initial memory usage
         try:
@@ -97,7 +101,9 @@ class PerformanceMonitor:
             self.active_operations[operation_id] = metrics
         return operation_id
 
-    def end_operation(self, operation_id: str, items_processed: int | None = None) -> PerformanceMetrics:
+    def end_operation(
+        self, operation_id: str, items_processed: int | None = None
+    ) -> PerformanceMetrics:
         """End monitoring an operation.
 
         Args:
@@ -111,8 +117,12 @@ class PerformanceMonitor:
             return PerformanceMetrics(operation_name="disabled", start_time=time.time())
         with self._lock:
             if operation_id not in self.active_operations:
-                logger.warning(f"Operation {operation_id} not found in active operations")
-                return PerformanceMetrics(operation_name="unknown", start_time=time.time())
+                logger.warning(
+                    f"Operation {operation_id} not found in active operations"
+                )
+                return PerformanceMetrics(
+                    operation_name="unknown", start_time=time.time()
+                )
             metrics = self.active_operations.pop(operation_id)
         # Finalize metrics
         metrics.end_time = time.time()
@@ -133,7 +143,9 @@ class PerformanceMonitor:
             max_history = 1000
             if len(self.metrics_history) > max_history:
                 self.metrics_history = self.metrics_history[-max_history:]
-        logger.info(f"Operation {metrics.operation_name} completed in {metrics.duration:.2f}s")
+        logger.info(
+            f"Operation {metrics.operation_name} completed in {metrics.duration:.2f}s"
+        )
         return metrics
 
     def get_metrics_summary(self) -> dict[str, Any]:
@@ -146,8 +158,12 @@ class PerformanceMonitor:
             if not self.metrics_history:
                 return {"total_operations": 0, "average_duration": 0, "operations": []}
             total_ops = len(self.metrics_history)
-            avg_duration = sum(m.duration or 0 for m in self.metrics_history) / total_ops
-            avg_memory = sum(m.peak_memory_mb or 0 for m in self.metrics_history) / total_ops
+            avg_duration = (
+                sum(m.duration or 0 for m in self.metrics_history) / total_ops
+            )
+            avg_memory = (
+                sum(m.peak_memory_mb or 0 for m in self.metrics_history) / total_ops
+            )
             # Group by operation name
             operation_stats = {}
             for metric in self.metrics_history:
@@ -157,7 +173,7 @@ class PerformanceMonitor:
                         "count": 0,
                         "total_duration": 0,
                         "total_items": 0,
-                        "avg_throughput": 0
+                        "avg_throughput": 0,
                     }
                 stats = operation_stats[name]
                 stats["count"] += 1
@@ -175,7 +191,7 @@ class PerformanceMonitor:
                 "average_duration": avg_duration,
                 "average_memory_mb": avg_memory,
                 "operations": operation_stats,
-                "recent_metrics": [m.to_dict() for m in self.metrics_history[-10:]]
+                "recent_metrics": [m.to_dict() for m in self.metrics_history[-10:]],
             }
 
     def clear_metrics(self) -> None:
@@ -219,6 +235,7 @@ def performance_context(operation_name: str, metadata: dict[str, Any] | None = N
 
             def add_items(self, count: int) -> None:
                 self.items_processed += count
+
         context = Context()
         yield context
     finally:
@@ -235,6 +252,7 @@ def performance_profile(operation_name: str | None = None, track_memory: bool = 
     Returns:
         Decorator function
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args, **kwargs) -> T:
@@ -242,7 +260,7 @@ def performance_profile(operation_name: str | None = None, track_memory: bool = 
             metadata = {
                 "function": func.__name__,
                 "module": func.__module__,
-                "track_memory": track_memory
+                "track_memory": track_memory,
             }
             monitor = get_performance_monitor()
             operation_id = monitor.start_operation(name, metadata)
@@ -250,7 +268,7 @@ def performance_profile(operation_name: str | None = None, track_memory: bool = 
                 result = func(*args, **kwargs)
                 # Try to determine items processed from result
                 items_processed = None
-                if hasattr(result, '__len__'):
+                if hasattr(result, "__len__"):
                     try:
                         items_processed = len(result)
                     except (TypeError, AttributeError):
@@ -258,7 +276,9 @@ def performance_profile(operation_name: str | None = None, track_memory: bool = 
                 return result
             finally:
                 monitor.end_operation(operation_id, items_processed)
+
         return wrapper
+
     return decorator
 
 
@@ -289,7 +309,7 @@ class MemoryOptimizer:
                 raise ResourceExhaustedError(
                     f"Memory usage ({memory_mb:.1f}MB) exceeds limit ({self.max_memory_mb}MB)",
                     resource_type="memory",
-                    limit=self.max_memory_mb
+                    limit=self.max_memory_mb,
                 )
             return memory_mb
         except psutil.Error as e:
@@ -299,6 +319,7 @@ class MemoryOptimizer:
     def optimize_memory(self) -> None:
         """Trigger memory optimization."""
         import gc
+
         # Force garbage collection
         collected = gc.collect()
         if collected > 0:
@@ -329,7 +350,9 @@ class ProcessingOptimizer:
         self.memory_optimizer = MemoryOptimizer()
         self.performance_monitor = get_performance_monitor()
 
-    def optimize_batch_size(self, total_items: int, item_size_estimate: float = 1.0) -> int:
+    def optimize_batch_size(
+        self, total_items: int, item_size_estimate: float = 1.0
+    ) -> int:
         """Calculate optimal batch size for processing.
 
         Args:
@@ -348,11 +371,17 @@ class ProcessingOptimizer:
         min_batch = 1
         max_batch = min(1000, total_items)  # Cap at 1000 or total items
         optimal_batch = max(min_batch, min(memory_based_batch, max_batch))
-        logger.debug(f"Calculated optimal batch size: {optimal_batch} for {total_items} items")
+        logger.debug(
+            f"Calculated optimal batch size: {optimal_batch} for {total_items} items"
+        )
         return optimal_batch
 
-    def process_in_batches(self, items: list[Any], processor: Callable[[list[Any]], Any],
-                          batch_size: int | None = None) -> list[Any]:
+    def process_in_batches(
+        self,
+        items: list[Any],
+        processor: Callable[[list[Any]], Any],
+        batch_size: int | None = None,
+    ) -> list[Any]:
         """Process items in optimized batches.
 
         Args:
@@ -370,17 +399,25 @@ class ProcessingOptimizer:
             batch_size = self.optimize_batch_size(len(items))
         results = []
         total_batches = (len(items) + batch_size - 1) // batch_size
-        with performance_context("batch_processing", {"total_items": len(items), "batch_size": batch_size}) as perf:
+        with performance_context(
+            "batch_processing", {"total_items": len(items), "batch_size": batch_size}
+        ) as perf:
             for i in range(0, len(items), batch_size):
-                batch = items[i:i + batch_size]
+                batch = items[i : i + batch_size]
                 batch_num = i // batch_size + 1
-                logger.debug(f"Processing batch {batch_num}/{total_batches} ({len(batch)} items)")
+                logger.debug(
+                    f"Processing batch {batch_num}/{total_batches} ({len(batch)} items)"
+                )
                 # Check memory before processing batch
                 self.memory_optimizer.check_memory_usage()
                 # Process batch
                 try:
                     batch_result = processor(batch)
-                    results.extend(batch_result if isinstance(batch_result, list) else [batch_result])
+                    results.extend(
+                        batch_result
+                        if isinstance(batch_result, list)
+                        else [batch_result]
+                    )
                     # Update performance tracking
                     perf.add_items(len(batch))
                 except Exception as e:
@@ -391,8 +428,12 @@ class ProcessingOptimizer:
                     self.memory_optimizer.optimize_memory()
         return results
 
-    def parallel_process(self, items: list[Any], processor: Callable[[Any], Any],
-                        max_workers: int | None = None) -> list[Any]:
+    def parallel_process(
+        self,
+        items: list[Any],
+        processor: Callable[[Any], Any],
+        max_workers: int | None = None,
+    ) -> list[Any]:
         """Process items in parallel with optimization.
 
         Args:
@@ -410,11 +451,17 @@ class ProcessingOptimizer:
             max_workers = min(4, len(items))  # Cap at 4 workers
         # Use thread pool for I/O bound tasks
         from concurrent.futures import ThreadPoolExecutor, as_completed
+
         results = []
-        with performance_context("parallel_processing", {"total_items": len(items), "max_workers": max_workers}) as perf:
+        with performance_context(
+            "parallel_processing",
+            {"total_items": len(items), "max_workers": max_workers},
+        ) as perf:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 # Submit all tasks
-                future_to_item = {executor.submit(processor, item): item for item in items}
+                future_to_item = {
+                    executor.submit(processor, item): item for item in items
+                }
                 # Collect results as they complete
                 for future in as_completed(future_to_item):
                     try:
@@ -453,17 +500,21 @@ def timeout_handler(timeout_seconds: float):
     Returns:
         Decorator function
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args, **kwargs) -> T:
             import threading
+
             result = [None]
             exception = [None]
+
             def target():
                 try:
                     result[0] = func(*args, **kwargs)
                 except Exception as e:
                     exception[0] = e
+
             thread = threading.Thread(target=target)
             thread.daemon = True
             thread.start()
@@ -473,10 +524,12 @@ def timeout_handler(timeout_seconds: float):
                 raise ProcessingTimeoutError(
                     f"Operation {func.__name__} timed out after {timeout_seconds}s",
                     timeout_seconds=int(timeout_seconds),
-                    operation=func.__name__
+                    operation=func.__name__,
                 )
             if exception[0]:
                 raise exception[0]
             return result[0]
+
         return wrapper
+
     return decorator

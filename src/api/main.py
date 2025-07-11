@@ -1,4 +1,5 @@
 """FastAPI application for the medical record processor."""
+
 from __future__ import annotations
 
 import asyncio
@@ -72,10 +73,10 @@ async def lifespan(app: FastAPI):
 
     # Add signal handlers for graceful shutdown
     loop = asyncio.get_event_loop()
-    for signame in ('SIGINT', 'SIGTERM'):
+    for signame in ("SIGINT", "SIGTERM"):
         loop.add_signal_handler(
             getattr(signal, signame),
-            lambda: asyncio.create_task(shutdown_task_manager())
+            lambda: asyncio.create_task(shutdown_task_manager()),
         )
 
     logger.info("API started successfully")
@@ -101,7 +102,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add the rate limiter to the app
@@ -114,7 +115,7 @@ Instrumentator().instrument(app).expose(app)
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.api.cors["origins"] if hasattr(config, 'api') else ["*"],
+    allow_origins=config.api.cors["origins"] if hasattr(config, "api") else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -161,7 +162,9 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+    )
     return response
 
 
@@ -181,27 +184,33 @@ def validate_file_content(content: bytes) -> None:
     """Validate file content for malicious patterns."""
     # Example: check for common PDF exploits or malicious scripts
     if b"/JavaScript" in content or b"/JS" in content:
-        raise HTTPException(status_code=400, detail="Potentially malicious PDF content detected (JavaScript)")
+        raise HTTPException(
+            status_code=400,
+            detail="Potentially malicious PDF content detected (JavaScript)",
+        )
     if b"/Launch" in content:
-        raise HTTPException(status_code=400, detail="Potentially malicious PDF content detected (Launch Action)")
+        raise HTTPException(
+            status_code=400,
+            detail="Potentially malicious PDF content detected (Launch Action)",
+        )
 
 
 def validate_file_upload(file: UploadFile) -> None:
     """Validate uploaded file."""
     # Check file extension
-    if not file.filename or not file.filename.lower().endswith('.pdf'):
-        raise HTTPException(
-            status_code=400,
-            detail="Only PDF files are supported"
-        )
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
     # Check content type - be more lenient for testing
-    if file.content_type and file.content_type not in ['application/pdf', 'application/octet-stream']:
+    if file.content_type and file.content_type not in [
+        "application/pdf",
+        "application/octet-stream",
+    ]:
         # For non-PDF files, check filename extension more strictly
-        if not file.filename.lower().endswith('.pdf'):
+        if not file.filename.lower().endswith(".pdf"):
             raise HTTPException(
                 status_code=400,
-                detail="Invalid content type. Only PDF files are supported"
+                detail="Invalid content type. Only PDF files are supported",
             )
 
 
@@ -230,6 +239,7 @@ async def cleanup_old_files():
 
 # API Routes
 
+
 @app.get("/", response_model=APIVersion)
 async def root():
     """Get API version and information."""
@@ -241,7 +251,7 @@ async def root():
             "OCR Support",
             "Async Processing",
             "Batch Processing",
-            "Performance Monitoring"
+            "Performance Monitoring",
         ],
         endpoints={
             "health": "/health",
@@ -250,8 +260,8 @@ async def root():
             "status": "/status/{task_id}",
             "result": "/result/{task_id}",
             "stats": "/stats",
-            "docs": "/docs"
-        }
+            "docs": "/docs",
+        },
     )
 
 
@@ -269,7 +279,7 @@ async def health_check():
         uptime=(datetime.now() - startup_time).total_seconds(),
         memory_usage_mb=psutil.Process().memory_info().rss / 1024 / 1024,
         active_tasks=queue_status["processing_tasks"],
-        total_processed=queue_status["total_processed"]
+        total_processed=queue_status["total_processed"],
     )
 
 
@@ -297,15 +307,17 @@ async def list_processors():
     registry = get_processor_registry()
     processors = []
     for metadata in registry.list_processors():
-        processors.append(ProcessorInfo(
-            name=metadata.name,
-            version=metadata.version,
-            description=metadata.description,
-            input_types=metadata.input_types,
-            output_types=metadata.output_types,
-            capabilities=metadata.capabilities,
-            dependencies=metadata.dependencies
-        ))
+        processors.append(
+            ProcessorInfo(
+                name=metadata.name,
+                version=metadata.version,
+                description=metadata.description,
+                input_types=metadata.input_types,
+                output_types=metadata.output_types,
+                capabilities=metadata.capabilities,
+                dependencies=metadata.dependencies,
+            )
+        )
 
     return processors
 
@@ -316,7 +328,9 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
     """Upload a file for processing."""
     validate_file_upload(file)
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", dir=upload_dir) as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".pdf", dir=upload_dir
+        ) as tmp_file:
             content = await file.read()
             validate_file_content(content)
             tmp_file.write(content)
@@ -327,7 +341,7 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
                 size_bytes=len(content),
                 content_type=file.content_type,
                 upload_id=Path(tmp_file.name).name,
-                expires_at=datetime.now().replace(hour=23, minute=59, second=59)
+                expires_at=datetime.now().replace(hour=23, minute=59, second=59),
             )
 
     except Exception as e:
@@ -340,12 +354,14 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
 async def process_document(
     request: Request,
     file: UploadFile = File(...),
-    processing_request: ProcessingRequest = Depends()
+    processing_request: ProcessingRequest = Depends(),
 ):
     """Process a document."""
     validate_file_upload(file)
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", dir=upload_dir) as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".pdf", dir=upload_dir
+        ) as tmp_file:
             content = await file.read()
             validate_file_content(content)
             tmp_file.write(content)
@@ -353,13 +369,15 @@ async def process_document(
 
             # Submit processing task
             task_manager = await get_task_manager()
-            task_id = await task_manager.submit_task(file.filename, Path(tmp_file.name), processing_request)
+            task_id = await task_manager.submit_task(
+                file.filename, Path(tmp_file.name), processing_request
+            )
 
             return ProcessingResponse(
                 task_id=task_id,
                 status=ProcessingStatus.PENDING,
                 message="Document submitted for processing",
-                created_at=datetime.now()
+                created_at=datetime.now(),
             )
 
     except Exception as e:
@@ -368,10 +386,7 @@ async def process_document(
 
 
 @app.post("/process/{upload_id}", response_model=ProcessingResponse)
-async def process_uploaded_file(
-    upload_id: str,
-    request: ProcessingRequest
-):
+async def process_uploaded_file(upload_id: str, request: ProcessingRequest):
     """Process a previously uploaded file."""
     file_path = upload_dir / upload_id
 
@@ -387,7 +402,7 @@ async def process_uploaded_file(
             task_id=task_id,
             status=ProcessingStatus.PENDING,
             message="Document submitted for processing",
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
 
     except Exception as e:
@@ -414,7 +429,7 @@ async def get_task_status(task_id: str):
         file_size_mb=task_info.file_size_mb or 0.0,
         created_at=task_info.created_at,
         completed_at=task_info.completed_at,
-        error_message=task_info.error
+        error_message=task_info.error,
     )
 
 
@@ -461,7 +476,7 @@ async def get_queue_status():
         average_wait_time=0.0,  # TODO: Calculate
         estimated_processing_time=0.0,  # TODO: Calculate
         active_workers=queue_status["active_workers"],
-        max_workers=queue_status["max_workers"]
+        max_workers=queue_status["max_workers"],
     )
 
 
@@ -479,7 +494,7 @@ async def get_processing_stats():
         average_file_size_mb=stats["average_file_size_mb"],
         average_pages_per_document=stats["average_pages_per_document"],
         total_pages_processed=stats["total_pages_processed"],
-        total_ocr_pages=stats["total_ocr_pages"]
+        total_ocr_pages=stats["total_ocr_pages"],
     )
 
 
@@ -493,7 +508,7 @@ async def get_configuration():
         ocr_languages=["eng", "spa", "fra"],  # From config
         supported_formats=["pdf"],
         rate_limit_per_minute=60,
-        max_concurrent_tasks=4
+        max_concurrent_tasks=4,
     )
 
 
@@ -509,10 +524,10 @@ async def get_system_metrics():
         cpu_usage_percent=psutil.cpu_percent(),
         memory_usage_mb=psutil.Process().memory_info().rss / 1024 / 1024,
         memory_available_mb=psutil.virtual_memory().available / 1024 / 1024,
-        disk_usage_percent=psutil.disk_usage('/').percent,
+        disk_usage_percent=psutil.disk_usage("/").percent,
         active_connections=0,  # TODO: Track connections
         queue_size=queue_status["queue_size"],
-        uptime_seconds=queue_status["uptime_seconds"]
+        uptime_seconds=queue_status["uptime_seconds"],
     )
 
 
@@ -525,8 +540,8 @@ async def validation_exception_handler(request, exc):
         content=ErrorResponse(
             error="ValidationError",
             message="Invalid request data",
-            details=exc.errors()
-        ).model_dump(mode='json')
+            details=exc.errors(),
+        ).model_dump(mode="json"),
     )
 
 
@@ -538,8 +553,8 @@ async def processor_validation_exception_handler(request, exc):
         content=ErrorResponse(
             error="ProcessorValidationError",
             message=str(exc),
-            details=exc.details if hasattr(exc, 'details') else None
-        ).model_dump(mode='json')
+            details=exc.details if hasattr(exc, "details") else None,
+        ).model_dump(mode="json"),
     )
 
 
@@ -548,10 +563,9 @@ async def http_exception_handler(request, exc):
     """Handle HTTP exceptions."""
     return JSONResponse(
         status_code=exc.status_code,
-        content=ErrorResponse(
-            error="HTTPException",
-            message=exc.detail
-        ).model_dump(mode='json')
+        content=ErrorResponse(error="HTTPException", message=exc.detail).model_dump(
+            mode="json"
+        ),
     )
 
 
@@ -562,9 +576,8 @@ async def general_exception_handler(request, exc):
     return JSONResponse(
         status_code=500,
         content=ErrorResponse(
-            error="InternalServerError",
-            message="An internal server error occurred"
-        ).model_dump(mode='json')
+            error="InternalServerError", message="An internal server error occurred"
+        ).model_dump(mode="json"),
     )
 
 
@@ -577,7 +590,7 @@ def main():
         port=8000,
         reload=True,
         log_level="info",
-        timeout_graceful_shutdown=30
+        timeout_graceful_shutdown=30,
     )
 
 

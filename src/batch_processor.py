@@ -1,4 +1,5 @@
 """Batch processing module for handling multiple PDFs concurrently."""
+
 from __future__ import annotations
 
 import json
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BatchJob:
     """Represents a single PDF processing job in a batch."""
+
     id: str
     input_path: Path
     output_path: Path
@@ -42,6 +44,7 @@ class BatchJob:
 @dataclass
 class BatchProgress:
     """Tracks progress of a batch processing operation."""
+
     total_jobs: int
     completed_jobs: int = 0
     failed_jobs: int = 0
@@ -52,12 +55,19 @@ class BatchProgress:
     @property
     def pending_jobs(self) -> int:
         """Calculate number of pending jobs."""
-        return self.total_jobs - self.completed_jobs - self.failed_jobs - self.processing_jobs
+        return (
+            self.total_jobs
+            - self.completed_jobs
+            - self.failed_jobs
+            - self.processing_jobs
+        )
 
     @property
     def completion_rate(self) -> float:
         """Calculate completion rate as percentage."""
-        return (self.completed_jobs / self.total_jobs) * 100 if self.total_jobs > 0 else 0
+        return (
+            (self.completed_jobs / self.total_jobs) * 100 if self.total_jobs > 0 else 0
+        )
 
     @property
     def failure_rate(self) -> float:
@@ -83,6 +93,7 @@ class BatchProgress:
 @dataclass
 class BatchStatistics:
     """Comprehensive statistics for batch processing."""
+
     total_jobs: int
     successful_jobs: int
     failed_jobs: int
@@ -101,9 +112,11 @@ class BatchStatistics:
 class BatchProcessor:
     """Handles batch processing of multiple PDF files."""
 
-    def __init__(self,
-                 max_workers: int | None = None,
-                 progress_callback: Callable[[BatchProgress], None] | None = None):
+    def __init__(
+        self,
+        max_workers: int | None = None,
+        progress_callback: Callable[[BatchProgress], None] | None = None,
+    ):
         """Initialize batch processor.
 
         Args:
@@ -111,7 +124,9 @@ class BatchProcessor:
             progress_callback: Optional callback for progress updates
         """
         self.config = get_config()
-        self.max_workers = max_workers or self.config.performance.parallel.workers or os.cpu_count()
+        self.max_workers = (
+            max_workers or self.config.performance.parallel.workers or os.cpu_count()
+        )
         self.progress_callback = progress_callback
         self.performance_monitor = PerformanceMonitor()
         # Batch state
@@ -121,11 +136,13 @@ class BatchProcessor:
         self.resume_file: Path | None = None
         logger.info(f"Initialized batch processor with {self.max_workers} workers")
 
-    def add_directory(self,
-                     input_dir: Path,
-                     output_dir: Path,
-                     pattern: str = "*.pdf",
-                     recursive: bool = True) -> None:
+    def add_directory(
+        self,
+        input_dir: Path,
+        output_dir: Path,
+        pattern: str = "*.pdf",
+        recursive: bool = True,
+    ) -> None:
         """Add all PDF files from a directory to the batch.
 
         Args:
@@ -149,9 +166,7 @@ class BatchProcessor:
             # Create output subdirectory if needed
             output_path.parent.mkdir(parents=True, exist_ok=True)
             job = BatchJob(
-                id=str(uuid4()),
-                input_path=pdf_file,
-                output_path=output_path
+                id=str(uuid4()), input_path=pdf_file, output_path=output_path
             )
             self.jobs.append(job)
         self.progress.total_jobs = len(self.jobs)
@@ -168,11 +183,7 @@ class BatchProcessor:
             raise FileNotFoundError(f"Input file not found: {input_path}")
         # Create output directory if needed
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        job = BatchJob(
-            id=str(uuid4()),
-            input_path=input_path,
-            output_path=output_path
-        )
+        job = BatchJob(id=str(uuid4()), input_path=input_path, output_path=output_path)
         self.jobs.append(job)
         self.progress.total_jobs = len(self.jobs)
         logger.info(f"Added {input_path} to batch")
@@ -192,19 +203,22 @@ class BatchProcessor:
         if resume and self.resume_file and self.resume_file.exists():
             self._load_resume_state()
         # Filter jobs to process
-        jobs_to_process = [job for job in self.jobs if job.status in ["pending", "failed"]]
+        jobs_to_process = [
+            job for job in self.jobs if job.status in ["pending", "failed"]
+        ]
         if not jobs_to_process:
             logger.info("No jobs to process")
             return self._calculate_statistics()
-        logger.info(f"Processing {len(jobs_to_process)} jobs with {self.max_workers} workers")
+        logger.info(
+            f"Processing {len(jobs_to_process)} jobs with {self.max_workers} workers"
+        )
         # Start performance monitoring
         self.performance_monitor.start_batch_processing()
         # Process jobs concurrently
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # Submit all jobs
             future_to_job = {
-                executor.submit(self._process_job, job): job
-                for job in jobs_to_process
+                executor.submit(self._process_job, job): job for job in jobs_to_process
             }
             # Process completed jobs
             for future in as_completed(future_to_job):
@@ -232,8 +246,10 @@ class BatchProcessor:
         self.progress.end_time = datetime.now()
         # Stop performance monitoring
         self.performance_monitor.stop_batch_processing()
-        logger.info(f"Batch processing completed: {self.progress.completed_jobs} successful, "
-                   f"{self.progress.failed_jobs} failed")
+        logger.info(
+            f"Batch processing completed: {self.progress.completed_jobs} successful, "
+            f"{self.progress.failed_jobs} failed"
+        )
         return self._calculate_statistics()
 
     def _process_job(self, job: BatchJob) -> dict[str, Any]:
@@ -253,7 +269,7 @@ class BatchProcessor:
             processor = PDFProcessor()
             output_path = processor.process_pdf(job.input_path, job.output_path)
             # Read the result
-            with open(output_path, encoding='utf-8') as f:
+            with open(output_path, encoding="utf-8") as f:
                 result = json.load(f)
             job.end_time = datetime.now()
             return {
@@ -262,7 +278,7 @@ class BatchProcessor:
                 "duration": job.duration,
                 "pages": result.get("page_count", 0),
                 "segments": len(result.get("segments", [])),
-                "timeline_events": len(result.get("timeline", []))
+                "timeline_events": len(result.get("timeline", [])),
             }
         except Exception:
             job.end_time = datetime.now()
@@ -287,7 +303,7 @@ class BatchProcessor:
                 throughput_jobs_per_minute=0.0,
                 throughput_pages_per_minute=0.0,
                 memory_usage_mb=0.0,
-                errors=[job.error for job in failed_jobs if job.error]
+                errors=[job.error for job in failed_jobs if job.error],
             )
         # Calculate timing statistics
         durations = [job.duration for job in successful_jobs if job.duration]
@@ -296,12 +312,18 @@ class BatchProcessor:
         fastest_job = min(durations) if durations else 0.0
         slowest_job = max(durations) if durations else 0.0
         # Calculate page statistics
-        total_pages = sum(job.result.get("pages", 0) for job in successful_jobs if job.result)
+        total_pages = sum(
+            job.result.get("pages", 0) for job in successful_jobs if job.result
+        )
         average_pages = total_pages / len(successful_jobs) if successful_jobs else 0.0
         # Calculate throughput
-        batch_duration = (self.progress.end_time - self.progress.start_time).total_seconds()
+        batch_duration = (
+            self.progress.end_time - self.progress.start_time
+        ).total_seconds()
         if batch_duration > 0:
-            throughput_jobs = (len(successful_jobs) / batch_duration) * 60  # jobs per minute
+            throughput_jobs = (
+                len(successful_jobs) / batch_duration
+            ) * 60  # jobs per minute
             throughput_pages = (total_pages / batch_duration) * 60  # pages per minute
         else:
             throughput_jobs = 0.0
@@ -321,7 +343,7 @@ class BatchProcessor:
             throughput_jobs_per_minute=throughput_jobs,
             throughput_pages_per_minute=throughput_pages,
             memory_usage_mb=memory_usage,
-            errors=[job.error for job in failed_jobs if job.error]
+            errors=[job.error for job in failed_jobs if job.error],
         )
 
     def set_resume_file(self, resume_file: Path) -> None:
@@ -345,10 +367,12 @@ class BatchProcessor:
                     "input_path": str(job.input_path),
                     "output_path": str(job.output_path),
                     "status": job.status,
-                    "start_time": job.start_time.isoformat() if job.start_time else None,
+                    "start_time": job.start_time.isoformat()
+                    if job.start_time
+                    else None,
                     "end_time": job.end_time.isoformat() if job.end_time else None,
                     "error": job.error,
-                    "result": job.result
+                    "result": job.result,
                 }
                 for job in self.jobs
             ],
@@ -357,17 +381,17 @@ class BatchProcessor:
                 "completed_jobs": self.progress.completed_jobs,
                 "failed_jobs": self.progress.failed_jobs,
                 "processing_jobs": self.progress.processing_jobs,
-                "start_time": self.progress.start_time.isoformat()
-            }
+                "start_time": self.progress.start_time.isoformat(),
+            },
         }
-        with open(self.resume_file, 'w', encoding='utf-8') as f:
+        with open(self.resume_file, "w", encoding="utf-8") as f:
             json.dump(state, f, indent=2)
 
     def _load_resume_state(self) -> None:
         """Load batch state from resume file."""
         if not self.resume_file or not self.resume_file.exists():
             return
-        with open(self.resume_file, encoding='utf-8') as f:
+        with open(self.resume_file, encoding="utf-8") as f:
             state = json.load(f)
         self.batch_id = state["batch_id"]
         # Restore jobs
@@ -378,10 +402,14 @@ class BatchProcessor:
                 input_path=Path(job_data["input_path"]),
                 output_path=Path(job_data["output_path"]),
                 status=job_data["status"],
-                start_time=datetime.fromisoformat(job_data["start_time"]) if job_data["start_time"] else None,
-                end_time=datetime.fromisoformat(job_data["end_time"]) if job_data["end_time"] else None,
+                start_time=datetime.fromisoformat(job_data["start_time"])
+                if job_data["start_time"]
+                else None,
+                end_time=datetime.fromisoformat(job_data["end_time"])
+                if job_data["end_time"]
+                else None,
                 error=job_data["error"],
-                result=job_data["result"]
+                result=job_data["result"],
             )
             self.jobs.append(job)
         # Restore progress
@@ -391,7 +419,7 @@ class BatchProcessor:
             completed_jobs=progress_data["completed_jobs"],
             failed_jobs=progress_data["failed_jobs"],
             processing_jobs=0,  # Reset processing jobs
-            start_time=datetime.fromisoformat(progress_data["start_time"])
+            start_time=datetime.fromisoformat(progress_data["start_time"]),
         )
         logger.info(f"Resumed batch {self.batch_id} with {len(self.jobs)} jobs")
 

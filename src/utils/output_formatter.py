@@ -19,25 +19,29 @@ def to_csv_string(segments: list[DocumentSegment]) -> str:
     writer = csv.writer(output)
 
     # Write header
-    writer.writerow([
-        "segment_id",
-        "date_of_service",
-        "page_start",
-        "page_end",
-        "detected_header",
-        "text_content"
-    ])
+    writer.writerow(
+        [
+            "segment_id",
+            "date_of_service",
+            "page_start",
+            "page_end",
+            "detected_header",
+            "text_content",
+        ]
+    )
 
     # Write data
     for segment in segments:
-        writer.writerow([
-            segment.segment_id,
-            segment.date_of_service.isoformat() if segment.date_of_service else "",
-            segment.page_start,
-            segment.page_end,
-            segment.metadata.get("detected_header", ""),
-            segment.text_content
-        ])
+        writer.writerow(
+            [
+                segment.segment_id,
+                segment.date_of_service.isoformat() if segment.date_of_service else "",
+                segment.page_start,
+                segment.page_end,
+                segment.metadata.get("detected_header", ""),
+                segment.text_content,
+            ]
+        )
 
     return output.getvalue()
 
@@ -65,7 +69,7 @@ def to_excel(segments: list[DocumentSegment]) -> bytes:
         "Page Start",
         "Page End",
         "Detected Header",
-        "Text Content"
+        "Text Content",
     ]
     ws.append(headers)
 
@@ -76,14 +80,16 @@ def to_excel(segments: list[DocumentSegment]) -> bytes:
 
     # Write data
     for segment in segments:
-        ws.append([
-            segment.segment_id,
-            segment.date_of_service,
-            segment.page_start,
-            segment.page_end,
-            segment.metadata.get("detected_header", ""),
-            segment.text_content
-        ])
+        ws.append(
+            [
+                segment.segment_id,
+                segment.date_of_service,
+                segment.page_start,
+                segment.page_end,
+                segment.metadata.get("detected_header", ""),
+                segment.text_content,
+            ]
+        )
 
     # Adjust column widths
     for col in ws.columns:
@@ -95,7 +101,7 @@ def to_excel(segments: list[DocumentSegment]) -> bytes:
                     max_length = len(cell.value)
             except (ValueError, TypeError):
                 pass
-        adjusted_width = (max_length + 2)
+        adjusted_width = max_length + 2
         ws.column_dimensions[column].width = adjusted_width
 
     # Save to an in-memory buffer

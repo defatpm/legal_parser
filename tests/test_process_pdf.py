@@ -12,6 +12,7 @@ def sample_pdf(tmp_path):
     # Mock content (in real test, write a PDF file here)
     return str(pdf_path)
 
+
 def test_process_pdf(sample_pdf, tmp_path):
     output_path = tmp_path / "output.json"
     processor = PDFProcessor(sample_pdf, str(output_path))

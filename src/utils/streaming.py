@@ -1,4 +1,5 @@
 """Streaming processing utilities for large documents."""
+
 from __future__ import annotations
 
 import logging
@@ -13,13 +14,14 @@ from .performance import get_processing_optimizer, performance_context
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
-U = TypeVar('U')
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 @dataclass
 class StreamingConfig:
     """Configuration for streaming processing."""
+
     chunk_size: int = 1000
     max_memory_mb: float = 256.0
     buffer_size: int = 10
@@ -41,7 +43,9 @@ class StreamingProcessor:
         self.processed_count = 0
         self.checkpoints: list[dict[str, Any]] = []
 
-    def stream_process(self, items: Iterator[T], processor: Callable[[T], U]) -> Iterator[U]:
+    def stream_process(
+        self, items: Iterator[T], processor: Callable[[T], U]
+    ) -> Iterator[U]:
         """Process items in streaming fashion.
 
         Args:
@@ -88,7 +92,7 @@ class StreamingProcessor:
         checkpoint = {
             "processed_count": self.processed_count,
             "timestamp": time.time(),
-            "memory_usage": self.optimizer.memory_optimizer.check_memory_usage()
+            "memory_usage": self.optimizer.memory_optimizer.check_memory_usage(),
         }
         self.checkpoints.append(checkpoint)
         # Keep only recent checkpoints
@@ -109,7 +113,9 @@ class ChunkedFileProcessor:
         self.chunk_size = chunk_size
         self.optimizer = get_processing_optimizer()
 
-    def process_file_chunks(self, file_path: Path, processor: Callable[[bytes], Any]) -> Iterator[Any]:
+    def process_file_chunks(
+        self, file_path: Path, processor: Callable[[bytes], Any]
+    ) -> Iterator[Any]:
         """Process file in chunks.
 
         Args:
@@ -123,8 +129,10 @@ class ChunkedFileProcessor:
             raise FileNotFoundError(f"File not found: {file_path}")
         file_size = file_path.stat().st_size
         chunks_total = (file_size + self.chunk_size - 1) // self.chunk_size
-        with performance_context("chunked_file_processing", {"file_size": file_size, "chunks": chunks_total}) as perf:
-            with open(file_path, 'rb') as f:
+        with performance_context(
+            "chunked_file_processing", {"file_size": file_size, "chunks": chunks_total}
+        ) as perf:
+            with open(file_path, "rb") as f:
                 chunk_num = 0
                 while True:
                     chunk = f.read(self.chunk_size)
@@ -157,7 +165,9 @@ class MemoryEfficientProcessor:
         self.max_memory_mb = max_memory_mb
         self.optimizer = get_processing_optimizer()
 
-    def process_with_memory_limit(self, items: list[T], processor: Callable[[T], U]) -> Iterator[U]:
+    def process_with_memory_limit(
+        self, items: list[T], processor: Callable[[T], U]
+    ) -> Iterator[U]:
         """Process items with memory limit enforcement.
 
         Args:
@@ -170,12 +180,18 @@ class MemoryEfficientProcessor:
         if not items:
             return
         # Calculate optimal batch size
-        batch_size = self.optimizer.optimize_batch_size(len(items), item_size_estimate=1.0)
-        with performance_context("memory_efficient_processing", {"total_items": len(items)}) as perf:
+        batch_size = self.optimizer.optimize_batch_size(
+            len(items), item_size_estimate=1.0
+        )
+        with performance_context(
+            "memory_efficient_processing", {"total_items": len(items)}
+        ) as perf:
             for i in range(0, len(items), batch_size):
-                batch = items[i:i + batch_size]
+                batch = items[i : i + batch_size]
                 # Process batch
-                with self.optimizer.memory_optimizer.memory_limit_context(self.max_memory_mb):
+                with self.optimizer.memory_optimizer.memory_limit_context(
+                    self.max_memory_mb
+                ):
                     for item in batch:
                         try:
                             result = processor(item)
@@ -202,8 +218,12 @@ class ProgressTrackingProcessor:
         self.processed_items = 0
         self.total_items = 0
 
-    def process_with_progress(self, items: list[T], processor: Callable[[T], U],
-                             progress_callback: Callable[[int, int], None] | None = None) -> Iterator[U]:
+    def process_with_progress(
+        self,
+        items: list[T],
+        processor: Callable[[T], U],
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> Iterator[U]:
         """Process items with progress tracking.
 
         Args:
@@ -219,7 +239,9 @@ class ProgressTrackingProcessor:
         self.start_time = time.time()
         if self.enable_logging:
             logger.info(f"Starting processing of {self.total_items} items")
-        with performance_context("progress_tracking_processing", {"total_items": self.total_items}) as perf:
+        with performance_context(
+            "progress_tracking_processing", {"total_items": self.total_items}
+        ) as perf:
             for i, item in enumerate(items):
                 try:
                     result = processor(item)
@@ -247,8 +269,10 @@ class ProgressTrackingProcessor:
         if elapsed > 0:
             items_per_second = self.processed_items / elapsed
             eta_seconds = (self.total_items - self.processed_items) / items_per_second
-            logger.info(f"Progress: {self.processed_items}/{self.total_items} ({progress_percent:.1f}%) "
-                       f"- {items_per_second:.1f} items/s - ETA: {eta_seconds:.0f}s")
+            logger.info(
+                f"Progress: {self.processed_items}/{self.total_items} ({progress_percent:.1f}%) "
+                f"- {items_per_second:.1f} items/s - ETA: {eta_seconds:.0f}s"
+            )
 
     def _log_completion(self) -> None:
         """Log completion statistics."""
@@ -256,8 +280,10 @@ class ProgressTrackingProcessor:
             return
         elapsed = time.time() - self.start_time
         items_per_second = self.processed_items / elapsed if elapsed > 0 else 0
-        logger.info(f"Processing completed: {self.processed_items} items in {elapsed:.1f}s "
-                   f"({items_per_second:.1f} items/s)")
+        logger.info(
+            f"Processing completed: {self.processed_items} items in {elapsed:.1f}s "
+            f"({items_per_second:.1f} items/s)"
+        )
 
 
 class StreamingPDFProcessor:
@@ -273,8 +299,9 @@ class StreamingPDFProcessor:
         self.streaming_processor = StreamingProcessor(config)
         self.memory_processor = MemoryEfficientProcessor(config.max_memory_mb)
 
-    def process_pdf_pages_streaming(self, pdf_path: Path,
-                                   page_processor: Callable[[Any], Any]) -> Iterator[Any]:
+    def process_pdf_pages_streaming(
+        self, pdf_path: Path, page_processor: Callable[[Any], Any]
+    ) -> Iterator[Any]:
         """Process PDF pages in streaming fashion.
 
         Args:
@@ -285,20 +312,26 @@ class StreamingPDFProcessor:
             Processed pages
         """
         import fitz  # PyMuPDF
+
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
         with fitz.open(pdf_path) as doc:
             total_pages = doc.page_count
             logger.info(f"Processing {total_pages} pages from {pdf_path.name}")
+
             # Create page iterator
             def page_iterator():
                 for page_num in range(total_pages):
                     yield doc[page_num]
-            # Process pages in streaming fashion
-            yield from self.streaming_processor.stream_process(page_iterator(), page_processor)
 
-    def process_multiple_pdfs_streaming(self, pdf_paths: list[Path],
-                                       pdf_processor: Callable[[Path], Any]) -> Iterator[Any]:
+            # Process pages in streaming fashion
+            yield from self.streaming_processor.stream_process(
+                page_iterator(), page_processor
+            )
+
+    def process_multiple_pdfs_streaming(
+        self, pdf_paths: list[Path], pdf_processor: Callable[[Path], Any]
+    ) -> Iterator[Any]:
         """Process multiple PDF files in streaming fashion.
 
         Args:
@@ -310,10 +343,14 @@ class StreamingPDFProcessor:
         """
         logger.info(f"Processing {len(pdf_paths)} PDF files")
         # Use memory-efficient processing for multiple files
-        yield from self.memory_processor.process_with_memory_limit(pdf_paths, pdf_processor)
+        yield from self.memory_processor.process_with_memory_limit(
+            pdf_paths, pdf_processor
+        )
 
 
-def create_streaming_iterator[T](items: list[T], chunk_size: int = 100) -> Iterator[list[T]]:
+def create_streaming_iterator[T](
+    items: list[T], chunk_size: int = 100
+) -> Iterator[list[T]]:
     """Create a streaming iterator that yields chunks of items.
 
     Args:
@@ -324,7 +361,7 @@ def create_streaming_iterator[T](items: list[T], chunk_size: int = 100) -> Itera
         Chunks of items
     """
     for i in range(0, len(items), chunk_size):
-        yield items[i:i + chunk_size]
+        yield items[i : i + chunk_size]
 
 
 def streaming_map(func: Callable[[T], U], items: Iterator[T]) -> Iterator[U]:

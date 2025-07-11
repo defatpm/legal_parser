@@ -1,4 +1,5 @@
 """Metadata extraction from document segments."""
+
 from __future__ import annotations
 
 import logging
@@ -31,7 +32,9 @@ class MetadataExtractor:
         self._setup_patterns()
         self.document_type_keywords = self._build_document_type_keywords()
 
-    def extract_metadata(self, segments: list[DocumentSegment]) -> list[DocumentSegment]:
+    def extract_metadata(
+        self, segments: list[DocumentSegment]
+    ) -> list[DocumentSegment]:
         """Extract metadata from document segments.
 
         Args:
@@ -66,11 +69,11 @@ class MetadataExtractor:
         """
         # Date patterns in order of preference
         date_patterns = [
-            r'Date of Service:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
-            r'Service Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
-            r'DOS:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
-            r'Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
-            r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',  # Any date pattern
+            r"Date of Service:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+            r"Service Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+            r"DOS:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+            r"Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+            r"(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",  # Any date pattern
         ]
         for pattern in date_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
@@ -78,7 +81,7 @@ class MetadataExtractor:
                 date_str = match.group(1)
                 try:
                     # Try different date formats
-                    for fmt in ['%m/%d/%Y', '%m-%d-%Y', '%m/%d/%y', '%m-%d-%y']:
+                    for fmt in ["%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y"]:
                         try:
                             return datetime.strptime(date_str, fmt)
                         except ValueError:
@@ -92,8 +95,8 @@ class MetadataExtractor:
                 try:
                     # Simple date parsing for common formats
                     date_text = ent.text
-                    if re.match(r'\d{1,2}[/-]\d{1,2}[/-]\d{2,4}', date_text):
-                        for fmt in ['%m/%d/%Y', '%m-%d-%Y', '%m/%d/%y', '%m-%d-%y']:
+                    if re.match(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}", date_text):
+                        for fmt in ["%m/%d/%Y", "%m-%d-%Y", "%m/%d/%y", "%m-%d-%y"]:
                             try:
                                 return datetime.strptime(date_text, fmt)
                             except ValueError:
@@ -118,12 +121,12 @@ class MetadataExtractor:
                 if keyword in text_lower:
                     return doc_type
         # Check for all-caps headers (likely document types)
-        lines = text.split('\n')[:10]  # Check first 10 lines
+        lines = text.split("\n")[:10]  # Check first 10 lines
         for line in lines:
             line = line.strip()
             if len(line) > 5 and line.isupper() and not line.isdigit():
                 # Clean up the header
-                cleaned = re.sub(r'[^A-Z\s]', '', line).strip()
+                cleaned = re.sub(r"[^A-Z\s]", "", line).strip()
                 if cleaned:
                     return cleaned.title()
         return None
@@ -140,17 +143,17 @@ class MetadataExtractor:
         providers = {"provider": None, "facility": None}
         # Pattern-based extraction
         provider_patterns = [
-            r'Provider:\s*(.+?)(?:\n|$)',
-            r'Physician:\s*(.+?)(?:\n|$)',
-            r'Doctor:\s*(.+?)(?:\n|$)',
-            r'Attending:\s*(.+?)(?:\n|$)',
-            r'MD:\s*(.+?)(?:\n|$)',
+            r"Provider:\s*(.+?)(?:\n|$)",
+            r"Physician:\s*(.+?)(?:\n|$)",
+            r"Doctor:\s*(.+?)(?:\n|$)",
+            r"Attending:\s*(.+?)(?:\n|$)",
+            r"MD:\s*(.+?)(?:\n|$)",
         ]
         facility_patterns = [
-            r'Facility:\s*(.+?)(?:\n|$)',
-            r'Hospital:\s*(.+?)(?:\n|$)',
-            r'Clinic:\s*(.+?)(?:\n|$)',
-            r'Medical Center:\s*(.+?)(?:\n|$)',
+            r"Facility:\s*(.+?)(?:\n|$)",
+            r"Hospital:\s*(.+?)(?:\n|$)",
+            r"Clinic:\s*(.+?)(?:\n|$)",
+            r"Medical Center:\s*(.+?)(?:\n|$)",
         ]
         for pattern in provider_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
@@ -168,12 +171,15 @@ class MetadataExtractor:
             for ent in doc.ents:
                 if ent.label_ == "PERSON" and not providers["provider"]:
                     # Check if it looks like a doctor's name
-                    if re.search(r'\b(dr|doctor|md)\b', ent.text, re.IGNORECASE):
+                    if re.search(r"\b(dr|doctor|md)\b", ent.text, re.IGNORECASE):
                         providers["provider"] = ent.text
                 elif ent.label_ == "ORG" and not providers["facility"]:
                     # Check if it looks like a medical facility
-                    if re.search(r'\b(hospital|clinic|medical|center|health)\b',
-                                ent.text, re.IGNORECASE):
+                    if re.search(
+                        r"\b(hospital|clinic|medical|center|health)\b",
+                        ent.text,
+                        re.IGNORECASE,
+                    ):
                         providers["facility"] = ent.text
         return providers
 

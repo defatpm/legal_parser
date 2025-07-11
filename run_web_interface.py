@@ -19,15 +19,19 @@ def main():
         print("Starting Medical Record Processor Web Interface...")
         print("Opening browser at http://localhost:8501")
         print("Press Ctrl+C to stop the server")
-        subprocess.run([
-            sys.executable,
-            "-m", "streamlit",
-            "run",
-            str(web_interface_path),
-            "--server.port=8501",
-            "--server.address=0.0.0.0",
-            "--browser.gatherUsageStats=false"
-        ], check=True)
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "streamlit",
+                "run",
+                str(web_interface_path),
+                "--server.port=8501",
+                "--server.address=0.0.0.0",
+                "--browser.gatherUsageStats=false",
+            ],
+            check=True,
+        )
     except KeyboardInterrupt:
         print("\nShutting down web interface...")
     except subprocess.CalledProcessError as e:

@@ -1,4 +1,5 @@
 """Configuration management for the medical record processor."""
+
 from __future__ import annotations
 
 import logging
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AppConfig:
     """Application configuration."""
+
     name: str = "Medical Record Pre-Processor"
     version: str = "0.1.0"
     debug: bool = False
@@ -25,50 +27,69 @@ class AppConfig:
 @dataclass
 class ProcessingConfig:
     """Processing configuration."""
+
     max_file_size_mb: int = 100
-    timeout: dict[str, int] = field(default_factory=lambda: {
-        "pdf_extraction": 300,
-        "segmentation": 180,
-        "metadata_extraction": 120,
-        "timeline_building": 60
-    })
-    memory: dict[str, int | bool] = field(default_factory=lambda: {
-        "max_memory_per_doc_mb": 512,
-        "enable_monitoring": True
-    })
+    timeout: dict[str, int] = field(
+        default_factory=lambda: {
+            "pdf_extraction": 300,
+            "segmentation": 180,
+            "metadata_extraction": 120,
+            "timeline_building": 60,
+        }
+    )
+    memory: dict[str, int | bool] = field(
+        default_factory=lambda: {
+            "max_memory_per_doc_mb": 512,
+            "enable_monitoring": True,
+        }
+    )
 
 
 @dataclass
 class PDFExtractionConfig:
     """PDF extraction configuration."""
-    ocr: dict[str, bool | str | int] = field(default_factory=lambda: {
-        "enabled": True,
-        "language": "eng",
-        "confidence_threshold": 60,
-        "dpi": 300
-    })
-    text: dict[str, bool | int] = field(default_factory=lambda: {
-        "normalize_whitespace": True,
-        "remove_headers_footers": True,
-        "min_text_length": 10
-    })
+
+    ocr: dict[str, bool | str | int] = field(
+        default_factory=lambda: {
+            "enabled": True,
+            "language": "eng",
+            "confidence_threshold": 60,
+            "dpi": 300,
+        }
+    )
+    text: dict[str, bool | int] = field(
+        default_factory=lambda: {
+            "normalize_whitespace": True,
+            "remove_headers_footers": True,
+            "min_text_length": 10,
+        }
+    )
 
 
 @dataclass
 class SegmentationConfig:
     """Document segmentation configuration."""
+
     strategy: str = "keyword"
-    keywords: dict[str, list] = field(default_factory=lambda: {
-        "medical_sections": [
-            "patient history", "diagnosis", "treatment", "medications",
-            "laboratory results", "imaging", "procedure notes", "discharge summary"
-        ],
-        "date_patterns": [
-            r"\\d{1,2}/\\d{1,2}/\\d{4}",
-            r"\\d{4}-\\d{2}-\\d{2}",
-            r"\\b\\w+\\s+\\d{1,2},\\s+\\d{4}\\b"
-        ]
-    })
+    keywords: dict[str, list] = field(
+        default_factory=lambda: {
+            "medical_sections": [
+                "patient history",
+                "diagnosis",
+                "treatment",
+                "medications",
+                "laboratory results",
+                "imaging",
+                "procedure notes",
+                "discharge summary",
+            ],
+            "date_patterns": [
+                r"\\d{1,2}/\\d{1,2}/\\d{4}",
+                r"\\d{4}-\\d{2}-\\d{2}",
+                r"\\b\\w+\\s+\\d{1,2},\\s+\\d{4}\\b",
+            ],
+        }
+    )
     min_segment_length: int = 50
     max_segment_length: int = 2000
 
@@ -76,106 +97,131 @@ class SegmentationConfig:
 @dataclass
 class MetadataExtractionConfig:
     """Metadata extraction configuration."""
-    entities: dict[str, bool | list] = field(default_factory=lambda: {
-        "enabled": True,
-        "types": ["PERSON", "DATE", "ORG", "GPE", "TIME"]
-    })
-    dates: dict[str, list | str] = field(default_factory=lambda: {
-        "formats": ["%m/%d/%Y", "%Y-%m-%d", "%B %d, %Y", "%b %d, %Y"],
-        "default_timezone": "UTC"
-    })
-    providers: dict[str, list] = field(default_factory=lambda: {
-        "titles": ["Dr.", "Doctor", "Physician", "Nurse", "PA", "NP", "MD", "DO"]
-    })
+
+    entities: dict[str, bool | list] = field(
+        default_factory=lambda: {
+            "enabled": True,
+            "types": ["PERSON", "DATE", "ORG", "GPE", "TIME"],
+        }
+    )
+    dates: dict[str, list | str] = field(
+        default_factory=lambda: {
+            "formats": ["%m/%d/%Y", "%Y-%m-%d", "%B %d, %Y", "%b %d, %Y"],
+            "default_timezone": "UTC",
+        }
+    )
+    providers: dict[str, list] = field(
+        default_factory=lambda: {
+            "titles": ["Dr.", "Doctor", "Physician", "Nurse", "PA", "NP", "MD", "DO"]
+        }
+    )
 
 
 @dataclass
 class TimelineConfig:
     """Timeline building configuration."""
+
     sort_order: str = "chronological"
-    grouping: dict[str, bool | str] = field(default_factory=lambda: {
-        "enabled": True,
-        "period": "day"
-    })
+    grouping: dict[str, bool | str] = field(
+        default_factory=lambda: {"enabled": True, "period": "day"}
+    )
     include_confidence: bool = True
 
 
 @dataclass
 class OutputConfig:
     """Output configuration."""
+
     default_format: str = "json"
-    json: dict[str, bool | int] = field(default_factory=lambda: {
-        "pretty_print": True,
-        "indent": 2,
-        "ensure_ascii": False
-    })
-    csv: dict[str, str | bool] = field(default_factory=lambda: {
-        "delimiter": ",",
-        "quote_char": "\"",
-        "include_headers": True
-    })
-    naming: dict[str, bool | str] = field(default_factory=lambda: {
-        "include_timestamp": False,
-        "template": "{stem}_processed"
-    })
+    json: dict[str, bool | int] = field(
+        default_factory=lambda: {
+            "pretty_print": True,
+            "indent": 2,
+            "ensure_ascii": False,
+        }
+    )
+    csv: dict[str, str | bool] = field(
+        default_factory=lambda: {
+            "delimiter": ",",
+            "quote_char": '"',
+            "include_headers": True,
+        }
+    )
+    naming: dict[str, bool | str] = field(
+        default_factory=lambda: {
+            "include_timestamp": False,
+            "template": "{stem}_processed",
+        }
+    )
 
 
 @dataclass
 class LoggingConfig:
     """Logging configuration."""
+
     level: str = "INFO"
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    file: dict[str, bool | str | int] = field(default_factory=lambda: {
-        "enabled": False,
-        "path": "logs/processor.log",
-        "max_size_mb": 10,
-        "backup_count": 5
-    })
-    structured: dict[str, bool | str] = field(default_factory=lambda: {
-        "enabled": False,
-        "format": "json"
-    })
+    file: dict[str, bool | str | int] = field(
+        default_factory=lambda: {
+            "enabled": False,
+            "path": "logs/processor.log",
+            "max_size_mb": 10,
+            "backup_count": 5,
+        }
+    )
+    structured: dict[str, bool | str] = field(
+        default_factory=lambda: {"enabled": False, "format": "json"}
+    )
 
 
 @dataclass
 class SecurityConfig:
     """Security configuration."""
-    validation: dict[str, int | list | bool] = field(default_factory=lambda: {
-        "max_filename_length": 255,
-        "allowed_extensions": [".pdf"],
-        "malware_scan": False
-    })
-    temp_files: dict[str, bool | int] = field(default_factory=lambda: {
-        "auto_cleanup": True,
-        "cleanup_interval": 3600,
-        "max_age": 86400
-    })
+
+    validation: dict[str, int | list | bool] = field(
+        default_factory=lambda: {
+            "max_filename_length": 255,
+            "allowed_extensions": [".pdf"],
+            "malware_scan": False,
+        }
+    )
+    temp_files: dict[str, bool | int] = field(
+        default_factory=lambda: {
+            "auto_cleanup": True,
+            "cleanup_interval": 3600,
+            "max_age": 86400,
+        }
+    )
 
 
 @dataclass
 class PerformanceConfig:
     """Performance configuration."""
-    parallel: dict[str, bool | int] = field(default_factory=lambda: {
-        "enabled": True,
-        "workers": 0,
-        "chunk_size": 10
-    })
-    cache: dict[str, bool | str | int] = field(default_factory=lambda: {
-        "enabled": True,
-        "type": "memory",
-        "ttl": 3600,
-        "max_size_mb": 128
-    })
+
+    parallel: dict[str, bool | int] = field(
+        default_factory=lambda: {"enabled": True, "workers": 0, "chunk_size": 10}
+    )
+    cache: dict[str, bool | str | int] = field(
+        default_factory=lambda: {
+            "enabled": True,
+            "type": "memory",
+            "ttl": 3600,
+            "max_size_mb": 128,
+        }
+    )
 
 
 @dataclass
 class Config:
     """Main configuration class."""
+
     app: AppConfig = field(default_factory=AppConfig)
     processing: ProcessingConfig = field(default_factory=ProcessingConfig)
     pdf_extraction: PDFExtractionConfig = field(default_factory=PDFExtractionConfig)
     segmentation: SegmentationConfig = field(default_factory=SegmentationConfig)
-    metadata_extraction: MetadataExtractionConfig = field(default_factory=MetadataExtractionConfig)
+    metadata_extraction: MetadataExtractionConfig = field(
+        default_factory=MetadataExtractionConfig
+    )
     timeline: TimelineConfig = field(default_factory=TimelineConfig)
     output: OutputConfig = field(default_factory=OutputConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
@@ -215,7 +261,7 @@ class ConfigManager:
             Path.cwd() / "config.yaml",
             Path.cwd() / "config.yml",
             Path.home() / ".medical-processor" / "config.yaml",
-            Path("/etc/medical-processor/config.yaml")
+            Path("/etc/medical-processor/config.yaml"),
         ]
         for path in default_locations:
             if path.exists():
@@ -237,12 +283,14 @@ class ConfigManager:
         if self._config is not None:
             return self._config
         if not self.config_path.exists():
-            logger.warning(f"Config file not found at {self.config_path}, using defaults")
+            logger.warning(
+                f"Config file not found at {self.config_path}, using defaults"
+            )
             self._config = Config()
             return self._config
         logger.info(f"Loading configuration from {self.config_path}")
         try:
-            with open(self.config_path, encoding='utf-8') as f:
+            with open(self.config_path, encoding="utf-8") as f:
                 config_data = yaml.safe_load(f)
             if not config_data:
                 logger.warning("Empty configuration file, using defaults")
@@ -282,7 +330,9 @@ class ConfigManager:
         if "segmentation" in config_data:
             config.segmentation = SegmentationConfig(**config_data["segmentation"])
         if "metadata_extraction" in config_data:
-            config.metadata_extraction = MetadataExtractionConfig(**config_data["metadata_extraction"])
+            config.metadata_extraction = MetadataExtractionConfig(
+                **config_data["metadata_extraction"]
+            )
         if "timeline" in config_data:
             config.timeline = TimelineConfig(**config_data["timeline"])
         if "output" in config_data:
@@ -318,7 +368,9 @@ class ConfigManager:
         # Validate segmentation strategy
         valid_strategies = {"keyword", "ml", "hybrid"}
         if config.segmentation.strategy not in valid_strategies:
-            raise ValueError(f"Invalid segmentation strategy: {config.segmentation.strategy}")
+            raise ValueError(
+                f"Invalid segmentation strategy: {config.segmentation.strategy}"
+            )
         # Validate output format
         valid_formats = {"json", "csv", "excel"}
         if config.output.default_format not in valid_formats:
@@ -356,12 +408,13 @@ def setup_logging(config: LoggingConfig) -> None:
     handler: logging.Handler
     if config.file["enabled"]:
         from logging.handlers import RotatingFileHandler
+
         log_path = Path(config.file["path"])
         log_path.parent.mkdir(parents=True, exist_ok=True)
         handler = RotatingFileHandler(
             log_path,
             maxBytes=int(config.file["max_size_mb"]) * 1024 * 1024,
-            backupCount=int(config.file["backup_count"])
+            backupCount=int(config.file["backup_count"]),
         )
     else:
         handler = logging.StreamHandler()

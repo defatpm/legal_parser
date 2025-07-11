@@ -1,4 +1,5 @@
 """Document models for medical record processing."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -9,6 +10,7 @@ from typing import Any
 @dataclass
 class PageContent:
     """Represents extracted content from a single PDF page."""
+
     page_number: int
     raw_text: str
     is_ocr_applied: bool = False
@@ -19,6 +21,7 @@ class PageContent:
 @dataclass
 class DocumentSegment:
     """Represents a logical segment of a medical document."""
+
     segment_id: str
     text_content: str
     page_start: int
@@ -35,6 +38,7 @@ class DocumentSegment:
 @dataclass
 class DocumentChunk:
     """Represents a sub-chunk of a document segment for AI processing."""
+
     chunk_id: str
     parent_segment_id: str
     text_content: str
@@ -46,6 +50,7 @@ class DocumentChunk:
 @dataclass
 class ProcessedDocument:
     """Represents the final processed medical record document."""
+
     document_id: str
     original_filename: str
     total_pages: int
@@ -73,7 +78,9 @@ class ProcessedDocument:
                     "text_content": seg.text_content,
                     "page_start": seg.page_start,
                     "page_end": seg.page_end,
-                    "date_of_service": seg.date_of_service.isoformat() if seg.date_of_service else None,
+                    "date_of_service": seg.date_of_service.isoformat()
+                    if seg.date_of_service
+                    else None,
                     "document_type": seg.document_type,
                     "provider_name": seg.provider_name,
                     "facility_name": seg.facility_name,

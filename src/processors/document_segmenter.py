@@ -1,4 +1,5 @@
 """Document segmentation and noise filtering."""
+
 from __future__ import annotations
 
 import logging
@@ -64,11 +65,13 @@ class DocumentSegmenter:
         for pattern in self.noise_patterns:
             cleaned = pattern.sub("", cleaned)
         # Remove excessive whitespace
-        cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
-        cleaned = re.sub(r' {2,}', ' ', cleaned)
+        cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+        cleaned = re.sub(r" {2,}", " ", cleaned)
         return cleaned.strip()
 
-    def _find_segments(self, text: str, pages: list[PageContent]) -> list[DocumentSegment]:
+    def _find_segments(
+        self, text: str, pages: list[PageContent]
+    ) -> list[DocumentSegment]:
         """Find document segments using pattern matching.
 
         Args:
@@ -100,7 +103,7 @@ class DocumentSegmenter:
                     text_content=segment_text,
                     page_start=page_start,
                     page_end=page_end,
-                    metadata={"detected_header": header}
+                    metadata={"detected_header": header},
                 )
                 segments.append(segment)
         return segments
@@ -115,7 +118,7 @@ class DocumentSegmenter:
             Tuple of (start_page, end_page)
         """
         # Find page markers in the segment
-        page_markers = re.findall(r'\[PAGE_(\d+)\]', segment_text)
+        page_markers = re.findall(r"\[PAGE_(\d+)\]", segment_text)
         if page_markers:
             page_numbers = [int(p) for p in page_markers]
             return min(page_numbers), max(page_numbers)
@@ -129,23 +132,27 @@ class DocumentSegmenter:
         """
         patterns = [
             # Date of service patterns
-            re.compile(r'Date of Service:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', re.IGNORECASE),
-            re.compile(r'Service Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', re.IGNORECASE),
-            re.compile(r'DOS:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', re.IGNORECASE),
+            re.compile(
+                r"Date of Service:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})", re.IGNORECASE
+            ),
+            re.compile(
+                r"Service Date:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})", re.IGNORECASE
+            ),
+            re.compile(r"DOS:\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})", re.IGNORECASE),
             # Document type headers
-            re.compile(r'^[A-Z\s]{5,}$', re.MULTILINE),  # All-caps headers
-            re.compile(r'DISCHARGE SUMMARY', re.IGNORECASE),
-            re.compile(r'ADMISSION NOTE', re.IGNORECASE),
-            re.compile(r'PROGRESS NOTE', re.IGNORECASE),
-            re.compile(r'CONSULTATION', re.IGNORECASE),
-            re.compile(r'OPERATIVE REPORT', re.IGNORECASE),
-            re.compile(r'LABORATORY RESULTS?', re.IGNORECASE),
-            re.compile(r'RADIOLOGY REPORT', re.IGNORECASE),
-            re.compile(r'PATHOLOGY REPORT', re.IGNORECASE),
+            re.compile(r"^[A-Z\s]{5,}$", re.MULTILINE),  # All-caps headers
+            re.compile(r"DISCHARGE SUMMARY", re.IGNORECASE),
+            re.compile(r"ADMISSION NOTE", re.IGNORECASE),
+            re.compile(r"PROGRESS NOTE", re.IGNORECASE),
+            re.compile(r"CONSULTATION", re.IGNORECASE),
+            re.compile(r"OPERATIVE REPORT", re.IGNORECASE),
+            re.compile(r"LABORATORY RESULTS?", re.IGNORECASE),
+            re.compile(r"RADIOLOGY REPORT", re.IGNORECASE),
+            re.compile(r"PATHOLOGY REPORT", re.IGNORECASE),
             # Provider/facility headers
-            re.compile(r'Provider:\s*(.+)', re.IGNORECASE),
-            re.compile(r'Physician:\s*(.+)', re.IGNORECASE),
-            re.compile(r'Facility:\s*(.+)', re.IGNORECASE),
+            re.compile(r"Provider:\s*(.+)", re.IGNORECASE),
+            re.compile(r"Physician:\s*(.+)", re.IGNORECASE),
+            re.compile(r"Facility:\s*(.+)", re.IGNORECASE),
         ]
         return patterns
 
@@ -157,16 +164,16 @@ class DocumentSegmenter:
         """
         patterns = [
             # Common noise phrases
-            re.compile(r'fax cover sheet', re.IGNORECASE),
-            re.compile(r'confidentiality notice', re.IGNORECASE),
-            re.compile(r'this document contains', re.IGNORECASE),
-            re.compile(r'page \d+ of \d+', re.IGNORECASE),
-            re.compile(r'printed on \d{1,2}[/-]\d{1,2}[/-]\d{2,4}', re.IGNORECASE),
+            re.compile(r"fax cover sheet", re.IGNORECASE),
+            re.compile(r"confidentiality notice", re.IGNORECASE),
+            re.compile(r"this document contains", re.IGNORECASE),
+            re.compile(r"page \d+ of \d+", re.IGNORECASE),
+            re.compile(r"printed on \d{1,2}[/-]\d{1,2}[/-]\d{2,4}", re.IGNORECASE),
             # Headers and footers
-            re.compile(r'^[-=_]{3,}$', re.MULTILINE),  # Separator lines
-            re.compile(r'^\s*\d+\s*$', re.MULTILINE),  # Standalone page numbers
+            re.compile(r"^[-=_]{3,}$", re.MULTILINE),  # Separator lines
+            re.compile(r"^\s*\d+\s*$", re.MULTILINE),  # Standalone page numbers
             # Billing/administrative codes
-            re.compile(r'CPT:\s*\d+', re.IGNORECASE),
-            re.compile(r'ICD[- ]?\d*:\s*[\d.]+', re.IGNORECASE),
+            re.compile(r"CPT:\s*\d+", re.IGNORECASE),
+            re.compile(r"ICD[- ]?\d*:\s*[\d.]+", re.IGNORECASE),
         ]
         return patterns

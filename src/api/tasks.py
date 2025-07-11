@@ -1,4 +1,5 @@
 """Task management for async processing."""
+
 from __future__ import annotations
 
 import asyncio
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TaskInfo:
     """Information about a processing task."""
+
     task_id: str
     filename: str
     file_path: Path
@@ -48,13 +50,15 @@ class TaskInfo:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": self.completed_at.isoformat()
+            if self.completed_at
+            else None,
             "progress": self.progress,
             "current_page": self.current_page,
             "total_pages": self.total_pages,
             "error": self.error,
             "processing_time": self.processing_time,
-            "file_size_mb": self.file_size_mb
+            "file_size_mb": self.file_size_mb,
         }
 
 
@@ -111,7 +115,9 @@ class TaskManager:
         self.active_tasks.clear()
         logger.info("Stopped task manager")
 
-    async def submit_task(self, filename: str, file_path: Path, request: ProcessingRequest) -> str:
+    async def submit_task(
+        self, filename: str, file_path: Path, request: ProcessingRequest
+    ) -> str:
         """Submit a new processing task.
 
         Args:
@@ -124,7 +130,9 @@ class TaskManager:
         """
         task_id = str(uuid.uuid4())
         # Get file size
-        file_size_mb = file_path.stat().st_size / (1024 * 1024) if file_path.exists() else 0
+        file_size_mb = (
+            file_path.stat().st_size / (1024 * 1024) if file_path.exists() else 0
+        )
         task_info = TaskInfo(
             task_id=task_id,
             filename=filename,
@@ -132,7 +140,7 @@ class TaskManager:
             request=request,
             status=ProcessingStatus.PENDING,
             created_at=datetime.now(),
-            file_size_mb=file_size_mb
+            file_size_mb=file_size_mb,
         )
         self.tasks[task_id] = task_info
         await self.processing_queue.put(task_id)
@@ -176,7 +184,11 @@ class TaskManager:
         task_info = self.tasks.get(task_id)
         if not task_info:
             return False
-        if task_info.status in [ProcessingStatus.COMPLETED, ProcessingStatus.FAILED, ProcessingStatus.CANCELLED]:
+        if task_info.status in [
+            ProcessingStatus.COMPLETED,
+            ProcessingStatus.FAILED,
+            ProcessingStatus.CANCELLED,
+        ]:
             return False
         # Cancel active task
         if task_id in self.active_tasks:
@@ -194,10 +206,18 @@ class TaskManager:
         Returns:
             Queue status information
         """
-        pending_tasks = [t for t in self.tasks.values() if t.status == ProcessingStatus.PENDING]
-        processing_tasks = [t for t in self.tasks.values() if t.status == ProcessingStatus.PROCESSING]
-        completed_tasks = [t for t in self.tasks.values() if t.status == ProcessingStatus.COMPLETED]
-        failed_tasks = [t for t in self.tasks.values() if t.status == ProcessingStatus.FAILED]
+        pending_tasks = [
+            t for t in self.tasks.values() if t.status == ProcessingStatus.PENDING
+        ]
+        processing_tasks = [
+            t for t in self.tasks.values() if t.status == ProcessingStatus.PROCESSING
+        ]
+        completed_tasks = [
+            t for t in self.tasks.values() if t.status == ProcessingStatus.COMPLETED
+        ]
+        failed_tasks = [
+            t for t in self.tasks.values() if t.status == ProcessingStatus.FAILED
+        ]
         return {
             "queue_size": len(pending_tasks),
             "processing_tasks": len(processing_tasks),
@@ -207,7 +227,7 @@ class TaskManager:
             "max_workers": self.max_concurrent_tasks,
             "total_processed": self.total_processed,
             "total_failed": self.total_failed,
-            "uptime_seconds": (datetime.now() - self.start_time).total_seconds()
+            "uptime_seconds": (datetime.now() - self.start_time).total_seconds(),
         }
 
     async def get_statistics(self) -> dict[str, Any]:
@@ -216,7 +236,9 @@ class TaskManager:
         Returns:
             Processing statistics
         """
-        completed_tasks = [t for t in self.tasks.values() if t.status == ProcessingStatus.COMPLETED]
+        completed_tasks = [
+            t for t in self.tasks.values() if t.status == ProcessingStatus.COMPLETED
+        ]
         if not completed_tasks:
             return {
                 "total_requests": len(self.tasks),
@@ -226,28 +248,40 @@ class TaskManager:
                 "average_file_size_mb": 0.0,
                 "average_pages_per_document": 0.0,
                 "total_pages_processed": 0,
-                "total_ocr_pages": 0
+                "total_ocr_pages": 0,
             }
-        total_processing_time = sum(t.processing_time for t in completed_tasks if t.processing_time)
+        total_processing_time = sum(
+            t.processing_time for t in completed_tasks if t.processing_time
+        )
         total_file_size = sum(t.file_size_mb for t in completed_tasks if t.file_size_mb)
         # Calculate page statistics from results
         total_pages = 0
         total_ocr_pages = 0
         for task in completed_tasks:
-            if task.result and hasattr(task.result, 'output'):
+            if task.result and hasattr(task.result, "output"):
                 pages = task.result.output
                 if pages:
                     total_pages += len(pages)
-                    total_ocr_pages += sum(1 for page in pages if hasattr(page, 'is_ocr_applied') and page.is_ocr_applied)
+                    total_ocr_pages += sum(
+                        1
+                        for page in pages
+                        if hasattr(page, "is_ocr_applied") and page.is_ocr_applied
+                    )
         return {
             "total_requests": len(self.tasks),
             "completed_requests": len(completed_tasks),
             "failed_requests": self.total_failed,
-            "average_processing_time": total_processing_time / len(completed_tasks) if completed_tasks else 0.0,
-            "average_file_size_mb": total_file_size / len(completed_tasks) if completed_tasks else 0.0,
-            "average_pages_per_document": total_pages / len(completed_tasks) if completed_tasks else 0.0,
+            "average_processing_time": total_processing_time / len(completed_tasks)
+            if completed_tasks
+            else 0.0,
+            "average_file_size_mb": total_file_size / len(completed_tasks)
+            if completed_tasks
+            else 0.0,
+            "average_pages_per_document": total_pages / len(completed_tasks)
+            if completed_tasks
+            else 0.0,
             "total_pages_processed": total_pages,
-            "total_ocr_pages": total_ocr_pages
+            "total_ocr_pages": total_ocr_pages,
         }
 
     async def cleanup_old_tasks(self, max_age_hours: int = 24):
@@ -259,8 +293,16 @@ class TaskManager:
         cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
         tasks_to_remove = []
         for task_id, task_info in self.tasks.items():
-            if (task_info.status in [ProcessingStatus.COMPLETED, ProcessingStatus.FAILED, ProcessingStatus.CANCELLED] and
-                task_info.completed_at and task_info.completed_at < cutoff_time):
+            if (
+                task_info.status
+                in [
+                    ProcessingStatus.COMPLETED,
+                    ProcessingStatus.FAILED,
+                    ProcessingStatus.CANCELLED,
+                ]
+                and task_info.completed_at
+                and task_info.completed_at < cutoff_time
+            ):
                 tasks_to_remove.append(task_id)
         for task_id in tasks_to_remove:
             del self.tasks[task_id]
@@ -278,7 +320,9 @@ class TaskManager:
             while self.running:
                 try:
                     # Get next task from queue
-                    task_id = await asyncio.wait_for(self.processing_queue.get(), timeout=1.0)
+                    task_id = await asyncio.wait_for(
+                        self.processing_queue.get(), timeout=1.0
+                    )
                     # Process the task
                     await self._process_task(task_id, worker_name)
                 except TimeoutError:
@@ -312,14 +356,13 @@ class TaskManager:
                 "ocr_enabled": task_info.request.ocr_enabled,
                 "ocr_language": task_info.request.ocr_language,
                 "normalize_whitespace": task_info.request.normalize_whitespace,
-                "min_text_length": task_info.request.min_text_length
+                "min_text_length": task_info.request.min_text_length,
             }
             processor = PDFExtractor(config=processor_config)
             # Process the file
             start_time = datetime.now()
             result = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: processor.process(task_info.file_path)
+                None, lambda: processor.process(task_info.file_path)
             )
             processing_time = (datetime.now() - start_time).total_seconds()
             # Update task with result
@@ -331,7 +374,9 @@ class TaskManager:
             if result.output:
                 task_info.total_pages = len(result.output)
             self.total_processed += 1
-            logger.info(f"Task {task_id} completed successfully in {processing_time:.2f}s")
+            logger.info(
+                f"Task {task_id} completed successfully in {processing_time:.2f}s"
+            )
         except Exception as e:
             # Handle processing error
             task_info.status = ProcessingStatus.FAILED
@@ -339,7 +384,9 @@ class TaskManager:
             task_info.completed_at = datetime.now()
             task_info.progress = 0.0
             self.total_failed += 1
-            self.error_handler.handle_error(e, {"task_id": task_id, "filename": task_info.filename})
+            self.error_handler.handle_error(
+                e, {"task_id": task_id, "filename": task_info.filename}
+            )
             logger.error(f"Task {task_id} failed: {e}")
         finally:
             # Remove from active tasks

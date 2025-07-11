@@ -1,4 +1,5 @@
 """Abstract base class for all document processors."""
+
 from __future__ import annotations
 
 import logging
@@ -12,11 +13,12 @@ from ..utils.error_handler import get_error_handler
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ProcessorStatus(Enum):
     """Status of a processor."""
+
     IDLE = "idle"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -27,6 +29,7 @@ class ProcessorStatus(Enum):
 @dataclass
 class ProcessorMetadata:
     """Metadata about a processor."""
+
     name: str
     version: str
     description: str
@@ -46,13 +49,14 @@ class ProcessorMetadata:
             "output_types": self.output_types,
             "capabilities": self.capabilities,
             "configuration_schema": self.configuration_schema,
-            "dependencies": self.dependencies
+            "dependencies": self.dependencies,
         }
 
 
 @dataclass
 class ProcessingContext:
     """Context information for processing operations."""
+
     document_id: str | None = None
     source_path: str | None = None
     processing_params: dict[str, Any] = field(default_factory=dict)
@@ -64,13 +68,14 @@ class ProcessingContext:
             "document_id": self.document_id,
             "source_path": self.source_path,
             "processing_params": self.processing_params,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 @dataclass
 class ProcessingResult:
     """Result of a processing operation."""
+
     status: ProcessorStatus
     output: Any
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -84,7 +89,7 @@ class ProcessingResult:
             "output": self.output,
             "metadata": self.metadata,
             "error": str(self.error) if self.error else None,
-            "processing_time": self.processing_time
+            "processing_time": self.processing_time,
         }
 
 
@@ -121,7 +126,9 @@ class BaseProcessor(ABC):
         pass
 
     @abstractmethod
-    def process(self, input_data: Any, context: ProcessingContext | None = None) -> ProcessingResult:
+    def process(
+        self, input_data: Any, context: ProcessingContext | None = None
+    ) -> ProcessingResult:
         """Process input data.
 
         Args:
@@ -158,7 +165,7 @@ class BaseProcessor(ABC):
             "status": self.status.value,
             "metadata": self.metadata.to_dict(),
             "stats": self.processing_stats.copy(),
-            "error_summary": self.error_handler.get_error_summary()
+            "error_summary": self.error_handler.get_error_summary(),
         }
 
     def reset_stats(self) -> None:
@@ -185,6 +192,7 @@ class BaseProcessor(ABC):
             ConfigurationError: If configuration is invalid
         """
         from ..utils.exceptions import ConfigurationError
+
         # Check if required configuration sections exist
         required_sections = self._get_required_config_sections()
         for section in required_sections:
@@ -225,7 +233,9 @@ class BaseProcessor(ABC):
         # Default implementation - should be overridden by subclasses
         return input_data is not None
 
-    def _update_processing_context(self, context: ProcessingContext | None) -> ProcessingContext:
+    def _update_processing_context(
+        self, context: ProcessingContext | None
+    ) -> ProcessingContext:
         """Update and return processing context.
 
         Args:
@@ -237,16 +247,22 @@ class BaseProcessor(ABC):
         if context is None:
             context = ProcessingContext()
         # Add processor-specific metadata
-        context.metadata.update({
-            "processor_name": self.metadata.name,
-            "processor_version": self.metadata.version,
-            "processor_capabilities": self.metadata.capabilities
-        })
+        context.metadata.update(
+            {
+                "processor_name": self.metadata.name,
+                "processor_version": self.metadata.version,
+                "processor_capabilities": self.metadata.capabilities,
+            }
+        )
         self.processing_context = context
         return context
 
-    def _create_success_result(self, output: Any, metadata: dict[str, Any] | None = None,
-                              processing_time: float | None = None) -> ProcessingResult:
+    def _create_success_result(
+        self,
+        output: Any,
+        metadata: dict[str, Any] | None = None,
+        processing_time: float | None = None,
+    ) -> ProcessingResult:
         """Create a successful processing result.
 
         Args:
@@ -261,10 +277,12 @@ class BaseProcessor(ABC):
             status=ProcessorStatus.COMPLETED,
             output=output,
             metadata=metadata or {},
-            processing_time=processing_time
+            processing_time=processing_time,
         )
 
-    def _create_error_result(self, error: Exception, processing_time: float | None = None) -> ProcessingResult:
+    def _create_error_result(
+        self, error: Exception, processing_time: float | None = None
+    ) -> ProcessingResult:
         """Create an error processing result.
 
         Args:
@@ -278,7 +296,7 @@ class BaseProcessor(ABC):
             status=ProcessorStatus.FAILED,
             output=None,
             error=error,
-            processing_time=processing_time
+            processing_time=processing_time,
         )
 
 
@@ -304,7 +322,9 @@ class ProcessorRegistry:
         self._processors[name] = processor_class
         logger.info(f"Registered processor: {name}")
 
-    def get_processor(self, name: str, config: dict[str, Any] | None = None) -> BaseProcessor:
+    def get_processor(
+        self, name: str, config: dict[str, Any] | None = None
+    ) -> BaseProcessor:
         """Get a processor instance.
 
         Args:

@@ -1,4 +1,5 @@
 """Tests for performance monitoring and optimization."""
+
 from __future__ import annotations
 
 import tempfile
@@ -40,7 +41,7 @@ class TestPerformanceMetrics:
             operation_name="test_operation",
             start_time=time.time(),
             items_processed=100,
-            metadata={"key": "value"}
+            metadata={"key": "value"},
         )
 
         assert metrics.operation_name == "test_operation"
@@ -53,9 +54,7 @@ class TestPerformanceMetrics:
         """Test metrics finalization."""
         start_time = time.time()
         metrics = PerformanceMetrics(
-            operation_name="test_operation",
-            start_time=start_time,
-            items_processed=100
+            operation_name="test_operation", start_time=start_time, items_processed=100
         )
 
         # Simulate some processing time
@@ -71,9 +70,7 @@ class TestPerformanceMetrics:
     def test_metrics_to_dict(self):
         """Test converting metrics to dictionary."""
         metrics = PerformanceMetrics(
-            operation_name="test_operation",
-            start_time=time.time(),
-            items_processed=50
+            operation_name="test_operation", start_time=time.time(), items_processed=50
         )
         metrics.finalize()
 
@@ -224,13 +221,13 @@ class TestProcessingOptimizer:
 
         # Simple processor that squares values
         def processor(item):
-            return item ** 2
+            return item**2
 
         items = list(range(5))
         results = optimizer.parallel_process(items, processor, max_workers=2)
 
         assert len(results) == 5
-        assert sorted(results) == [x ** 2 for x in range(5)]
+        assert sorted(results) == [x**2 for x in range(5)]
 
 
 class TestPerformanceDecorators:
@@ -246,12 +243,15 @@ class TestPerformanceDecorators:
         assert len(monitor.metrics_history) >= 1
 
         # Find our operation
-        test_metrics = [m for m in monitor.metrics_history if m.operation_name == "test_operation"]
+        test_metrics = [
+            m for m in monitor.metrics_history if m.operation_name == "test_operation"
+        ]
         assert len(test_metrics) >= 1
         assert test_metrics[-1].items_processed == 5
 
     def test_performance_profile_decorator(self):
         """Test performance profile decorator."""
+
         @performance_profile("test_function")
         def test_function(items):
             time.sleep(0.01)
@@ -262,12 +262,15 @@ class TestPerformanceDecorators:
         assert result == [1, 2, 3]
 
         monitor = get_performance_monitor()
-        test_metrics = [m for m in monitor.metrics_history if m.operation_name == "test_function"]
+        test_metrics = [
+            m for m in monitor.metrics_history if m.operation_name == "test_function"
+        ]
         assert len(test_metrics) >= 1
         assert test_metrics[-1].duration > 0
 
     def test_timeout_handler(self):
         """Test timeout handler decorator."""
+
         @timeout_handler(0.1)
         def slow_function():
             time.sleep(0.2)
@@ -278,6 +281,7 @@ class TestPerformanceDecorators:
 
     def test_timeout_handler_success(self):
         """Test timeout handler with successful completion."""
+
         @timeout_handler(0.2)
         def fast_function():
             time.sleep(0.05)
@@ -327,7 +331,7 @@ class TestChunkedFileProcessor:
         processor = ChunkedFileProcessor(chunk_size=10)
 
         # Create a temporary file
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
             tmp.write("Hello, World! This is a test file.")
             tmp_path = Path(tmp.name)
 
@@ -367,13 +371,13 @@ class TestMemoryEfficientProcessor:
 
         # Simple processor that squares values
         def item_processor(item):
-            return item ** 2
+            return item**2
 
         items = list(range(10))
         results = list(processor.process_with_memory_limit(items, item_processor))
 
         assert len(results) == 10
-        assert results == [x ** 2 for x in range(10)]
+        assert results == [x**2 for x in range(10)]
 
 
 class TestProgressTrackingProcessor:
@@ -396,11 +400,14 @@ class TestProgressTrackingProcessor:
 
         # Progress callback
         progress_updates = []
+
         def progress_callback(processed, total):
             progress_updates.append((processed, total))
 
         items = list(range(5))
-        results = list(processor.process_with_progress(items, item_processor, progress_callback))
+        results = list(
+            processor.process_with_progress(items, item_processor, progress_callback)
+        )
 
         assert len(results) == 5
         assert results == [x * 2 for x in range(5)]

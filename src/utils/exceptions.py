@@ -1,4 +1,5 @@
 """Custom exceptions for the medical record processor."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -7,7 +8,12 @@ from typing import Any
 class MedicalProcessorError(Exception):
     """Base exception for medical record processor errors."""
 
-    def __init__(self, message: str, error_code: str | None = None, details: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        message: str,
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+    ):
         """Initialize processor error.
 
         Args:
@@ -30,7 +36,7 @@ class MedicalProcessorError(Exception):
             "error_type": self.__class__.__name__,
             "message": self.message,
             "error_code": self.error_code,
-            "details": self.details
+            "details": self.details,
         }
 
 
@@ -53,7 +59,13 @@ class ConfigurationError(MedicalProcessorError):
 class PDFProcessingError(MedicalProcessorError):
     """PDF processing-related errors."""
 
-    def __init__(self, message: str, pdf_path: str | None = None, page_number: int | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        pdf_path: str | None = None,
+        page_number: int | None = None,
+        **kwargs,
+    ):
         """Initialize PDF processing error.
 
         Args:
@@ -81,7 +93,7 @@ class OCRError(PDFProcessingError):
             **kwargs: Additional keyword arguments
         """
         # Remove error_code from kwargs to avoid duplicate
-        kwargs.pop('error_code', None)
+        kwargs.pop("error_code", None)
         super().__init__(message, **kwargs)
         self.error_code = "OCR_ERROR"
         if confidence is not None:
@@ -139,7 +151,13 @@ class TimelineError(MedicalProcessorError):
 class ValidationError(MedicalProcessorError):
     """Input validation errors."""
 
-    def __init__(self, message: str, field_name: str | None = None, field_value: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        field_name: str | None = None,
+        field_value: str | None = None,
+        **kwargs,
+    ):
         """Initialize validation error.
 
         Args:
@@ -158,7 +176,13 @@ class ValidationError(MedicalProcessorError):
 class FileSystemError(MedicalProcessorError):
     """File system operation errors."""
 
-    def __init__(self, message: str, file_path: str | None = None, operation: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        file_path: str | None = None,
+        operation: str | None = None,
+        **kwargs,
+    ):
         """Initialize file system error.
 
         Args:
@@ -177,7 +201,13 @@ class FileSystemError(MedicalProcessorError):
 class ProcessingTimeoutError(MedicalProcessorError):
     """Processing timeout errors."""
 
-    def __init__(self, message: str, timeout_seconds: int | None = None, operation: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        timeout_seconds: int | None = None,
+        operation: str | None = None,
+        **kwargs,
+    ):
         """Initialize timeout error.
 
         Args:
@@ -196,7 +226,13 @@ class ProcessingTimeoutError(MedicalProcessorError):
 class ResourceExhaustedError(MedicalProcessorError):
     """Resource exhaustion errors (memory, disk space, etc.)."""
 
-    def __init__(self, message: str, resource_type: str | None = None, limit: float | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        resource_type: str | None = None,
+        limit: float | None = None,
+        **kwargs,
+    ):
         """Initialize resource exhaustion error.
 
         Args:
@@ -215,7 +251,9 @@ class ResourceExhaustedError(MedicalProcessorError):
 class RetryableError(MedicalProcessorError):
     """Errors that can be retried."""
 
-    def __init__(self, message: str, retry_count: int = 0, max_retries: int = 3, **kwargs):
+    def __init__(
+        self, message: str, retry_count: int = 0, max_retries: int = 3, **kwargs
+    ):
         """Initialize retryable error.
 
         Args:

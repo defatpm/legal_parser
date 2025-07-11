@@ -1,4 +1,5 @@
 """Tests for processor interface and base classes."""
+
 from __future__ import annotations
 
 import tempfile
@@ -33,7 +34,7 @@ class TestProcessorMetadata:
             input_types=["str"],
             output_types=["dict"],
             capabilities=["test"],
-            dependencies=["dep1", "dep2"]
+            dependencies=["dep1", "dep2"],
         )
 
         assert metadata.name == "TestProcessor"
@@ -51,7 +52,7 @@ class TestProcessorMetadata:
             version="1.0.0",
             description="Test processor",
             input_types=["str"],
-            output_types=["dict"]
+            output_types=["dict"],
         )
 
         metadata_dict = metadata.to_dict()
@@ -74,7 +75,7 @@ class TestProcessingContext:
             document_id="doc123",
             source_path="/path/to/file.pdf",
             processing_params={"param1": "value1"},
-            metadata={"key": "value"}
+            metadata={"key": "value"},
         )
 
         assert context.document_id == "doc123"
@@ -85,8 +86,7 @@ class TestProcessingContext:
     def test_context_to_dict(self):
         """Test converting context to dictionary."""
         context = ProcessingContext(
-            document_id="doc123",
-            source_path="/path/to/file.pdf"
+            document_id="doc123", source_path="/path/to/file.pdf"
         )
 
         context_dict = context.to_dict()
@@ -106,7 +106,7 @@ class TestProcessingResult:
             status=ProcessorStatus.COMPLETED,
             output={"key": "value"},
             metadata={"meta": "data"},
-            processing_time=1.5
+            processing_time=1.5,
         )
 
         assert result.status == ProcessorStatus.COMPLETED
@@ -121,7 +121,7 @@ class TestProcessingResult:
             status=ProcessorStatus.FAILED,
             output=None,
             error=ValueError("Test error"),
-            processing_time=0.5
+            processing_time=0.5,
         )
 
         result_dict = result.to_dict()
@@ -144,10 +144,12 @@ class MockProcessor(BaseProcessor):
             description="Mock processor for testing",
             input_types=["str"],
             output_types=["str"],
-            capabilities=["mock", "test"]
+            capabilities=["mock", "test"],
         )
 
-    def process(self, input_data: Any, context: ProcessingContext | None = None) -> ProcessingResult:
+    def process(
+        self, input_data: Any, context: ProcessingContext | None = None
+    ) -> ProcessingResult:
         context = self._update_processing_context(context)
 
         if input_data == "error":
@@ -208,8 +210,7 @@ class TestBaseProcessor:
         """Test processing with context."""
         processor = MockProcessor()
         context = ProcessingContext(
-            document_id="doc123",
-            processing_params={"param1": "value1"}
+            document_id="doc123", processing_params={"param1": "value1"}
         )
 
         result = processor.process("test_input", context)
@@ -217,7 +218,9 @@ class TestBaseProcessor:
         assert result.status == ProcessorStatus.COMPLETED
         assert processor.processing_context is not None
         assert processor.processing_context.document_id == "doc123"
-        assert processor.processing_context.metadata["processor_name"] == "MockProcessor"
+        assert (
+            processor.processing_context.metadata["processor_name"] == "MockProcessor"
+        )
 
     def test_processor_get_stats(self):
         """Test getting processing statistics."""
@@ -339,7 +342,7 @@ class TestPDFExtractorInterface:
         extractor = PDFExtractor()
 
         # Create a temporary PDF file for testing
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(b"%PDF-1.4\n%Test PDF content\n")
             tmp_path = Path(tmp.name)
 
