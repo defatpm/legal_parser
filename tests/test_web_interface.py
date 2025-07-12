@@ -1,272 +1,263 @@
-import json
-from unittest.mock import ANY, MagicMock, Mock, patch
+import zipfile
+from io import BytesIO
+from unittest.mock import MagicMock, patch
 
 import pytest
 import streamlit as st
 
-from src.web_interface import WebInterface
+# Import from new refactored modules
+from src.interfaces.web.app import initialize_session_state, run_app
+from src.interfaces.web.components.results import display_batch_results, display_results
+from src.interfaces.web.pages.batch_processing import batch_processing_page
+from src.interfaces.web.pages.processing_history import processing_history_page
+from src.interfaces.web.pages.settings import settings_page
+from src.interfaces.web.pages.single_document import single_document_page
+from src.interfaces.web.utils import create_batch_zip, data_to_csv
+from src.process_pdf import PDFProcessor
+from src.utils.exceptions import PDFProcessingError
 
 
 @pytest.fixture
-def web_interface():
-    """Create a WebInterface instance for testing."""
-    with patch("streamlit.session_state", MagicMock()):
-        with patch("src.web_interface.PDFProcessor"):
-            yield WebInterface()
+def mock_streamlit():
+    """Fixture to mock Streamlit functions."""
+    mocks = {
+        "title": MagicMock(),
+        "subheader": MagicMock(),
+        "info": MagicMock(),
+        "file_uploader": MagicMock(),
+        "button": MagicMock(),
+        "spinner": MagicMock(),
+        "progress": MagicMock(),
+        "empty": MagicMock(),
+        "success": MagicMock(),
+        "error": MagicMock(),
+        "json": MagicMock(),
+        "dataframe": MagicMock(),
+        "line_chart": MagicMock(),
+        "download_button": MagicMock(),
+        "slider": MagicMock(),
+        "expander": MagicMock(),
+        "radio": MagicMock(),
+        "tabs": MagicMock(return_value=[MagicMock() for _ in range(5)]),
+        "set_page_config": MagicMock(),
+        "markdown": MagicMock(),
+        "write": MagicMock(),
+        "rerun": MagicMock(),
+    }
+    with patch.multiple("streamlit", **mocks) as mock_st:
+        yield mock_st
 
 
-class TestWebInterface:
-    """Test the WebInterface class."""
+@pytest.fixture
+def mock_session_state():
+    """Fixture for session state."""
+    st.session_state = MagicMock()
+    st.session_state.history = {}
+    st.session_state.batch_history = {}
+    return st.session_state
 
-    def test_session_state_initialization(self, web_interface):
-        """Test session state initialization."""
-        assert hasattr(st.session_state, "processing_results")
-        assert hasattr(st.session_state, "batch_results")
-        assert hasattr(st.session_state, "processing_status")
 
-    @patch("streamlit.file_uploader")
-    @patch("streamlit.info")
-    @patch("streamlit.button")
-    @patch("streamlit.columns")
-    def test_single_document_page(
-        self, mock_columns, mock_button, mock_info, mock_file_uploader, web_interface
+def test_initialize_session_state(mock_session_state):
+    """Test session state initialization."""
+    initialize_session_state()
+    assert "history" in mock_session_state
+    assert "batch_history" in mock_session_state
+    assert "processor" in mock_session_state
+    assert "batch_processor" in mock_session_state
+    assert isinstance(mock_session_state.processor, PDFProcessor)
+
+
+def test_run_app(mock_streamlit):
+    """Test main app runner."""
+    with (
+        patch("src.interfaces.web.app.single_document_page"),
+        patch("src.interfaces.web.app.batch_processing_page"),
+        patch("src.interfaces.web.app.processing_history_page"),
+        patch("src.interfaces.web.app.settings_page"),
     ):
-        """Test single document page."""
-        # Mock file uploader with a file
-        mock_file = Mock()
-        mock_file.name = "test.pdf"
-        mock_file.size = 1024
-        mock_file_uploader.return_value = mock_file
 
-        # Mock columns
-        mock_col1 = Mock()
-        mock_col2 = Mock()
-        mock_col1.__enter__ = Mock(return_value=None)
-        mock_col1.__exit__ = Mock(return_value=None)
-        mock_col2.__enter__ = Mock(return_value=None)
-        mock_col2.__exit__ = Mock(return_value=None)
-        mock_columns.return_value = [mock_col1, mock_col2]
+        run_app()
 
-        # Mock buttons
-        mock_button.return_value = False
+        mock_streamlit["set_page_config"].assert_called_once()
+        mock_streamlit["markdown"].assert_called_once()
+        mock_streamlit["sidebar"]["title"].assert_called_with(
+            "Medical Record Processor"
+        )
+        mock_streamlit["sidebar"]["radio"].assert_called_once()
 
-        # Test the page
-        web_interface._single_document_page()
 
-        mock_file_uploader.assert_called_once()
-        mock_info.assert_called_once()
-        assert mock_columns.call_count == 1
-        assert mock_button.call_count == 2
+def test_single_document_page(mock_streamlit, mock_session_state):
+    """Test single document page."""
+    mock_file = MagicMock()
+    mock_file.name = "test.pdf"
+    mock_file.size = 1024
+    mock_file.getvalue.return_value = b"test content"
 
-    def test_process_single_document(self, web_interface):
-        """Test processing a single document."""
-        # Mock uploaded file
-        mock_file = Mock()
-        mock_file.name = "test.pdf"
-        mock_file.size = 1024
-        mock_file.read.return_value = b"PDF content"
+    mock_streamlit["file_uploader"].return_value = mock_file
+    mock_streamlit["button"].return_value = True
 
-        # Mock the processing result
-        mock_result = {
-            "document_id": "test-doc",
+    with (
+        patch(
+            "src.interfaces.web.pages.single_document.PDFProcessor.process_pdf"
+        ) as mock_process,
+        patch("pathlib.Path") as mock_path,
+    ):
+
+        mock_process.return_value = {"test": "data"}
+        mock_path.return_value.unlink = MagicMock()
+
+        single_document_page()
+
+        mock_streamlit["title"].assert_called_with("Single Document Processing")
+        mock_streamlit["spinner"].assert_called_with("Processing document...")
+        assert len(mock_session_state.history) == 1
+
+
+def test_single_document_error(mock_streamlit, mock_session_state):
+    """Test error handling in single document page."""
+    mock_file = MagicMock()
+    mock_file.name = "test.pdf"
+    mock_file.getvalue.return_value = b"test"
+
+    mock_streamlit["file_uploader"].return_value = mock_file
+    mock_streamlit["button"].return_value = True
+
+    with patch(
+        "src.interfaces.web.pages.single_document.PDFProcessor.process_pdf",
+        side_effect=PDFProcessingError("Test error"),
+    ):
+        single_document_page()
+
+        mock_streamlit["error"].assert_called()
+
+
+def test_batch_processing_page(mock_streamlit, mock_session_state):
+    """Test batch processing page."""
+    mock_files = [MagicMock(name="file1.pdf"), MagicMock(name="file2.pdf")]
+    mock_streamlit["file_uploader"].return_value = mock_files
+    mock_streamlit["slider"].return_value = 2
+    mock_streamlit["button"].return_value = True
+
+    with patch(
+        "src.interfaces.web.pages.batch_processing.BatchProcessor.process_batch"
+    ) as mock_process:
+        mock_process.return_value = [{"status": "completed"}, {"status": "completed"}]
+
+        batch_processing_page()
+
+        mock_streamlit["title"].assert_called_with("Batch Processing")
+        assert len(mock_session_state.batch_history) == 1
+
+
+def test_processing_history_page_empty(mock_streamlit):
+    """Test history page when empty."""
+    st.session_state.history = {}
+    st.session_state.batch_history = {}
+
+    processing_history_page()
+
+    mock_streamlit["info"].assert_called_with("No processing history yet.")
+
+
+def test_processing_history_page_with_data(mock_streamlit, mock_session_state):
+    """Test history page with data."""
+    mock_session_state.history = {
+        "id1": {
             "filename": "test.pdf",
-            "page_count": 5,
-            "segments": [{"text": "segment1", "type": "medical"}],
-            "timeline": [{"date": "2023-01-01", "event": "event1"}],
+            "timestamp": "2023-01-01",
+            "result": {},
+            "status": "completed",
         }
-
-        with patch("streamlit.session_state", MagicMock()) as mock_session:
-            st.session_state = mock_session
-            with patch("streamlit.progress"):
-                with patch("streamlit.empty"):
-                    with patch("streamlit.rerun"):
-                        with patch("tempfile.NamedTemporaryFile"):
-                            with patch("builtins.open", mock_open_json(mock_result)):
-                                web_interface._process_single_document(mock_file)
-
-            mock_session.processing_results.__setitem__.assert_called_with(
-                "test.pdf",
-                {
-                    "data": mock_result,
-                    "processed_at": ANY,
-                    "file_size": 1024,
-                    "processing_time": 0.0,
-                },
-            )
-            mock_session.processing_status.__setitem__.assert_called_with(
-                "test.pdf", "completed"
-            )
-
-    def test_display_document_summary(self, web_interface):
-        """Test _display_document_summary function."""
-        data = {
-            "document_id": "test_id",
-            "filename": "test.pdf",
-            "page_count": 1,
-            "segments": [{"type": "medical", "text": "segment1"}],
-            "processed_at": "2023-01-01T00:00:00",
+    }
+    mock_session_state.batch_history = {
+        "bid1": {
+            "filenames": ["test.pdf"],
+            "timestamp": "2023-01-01",
+            "results": [],
+            "status": "completed",
         }
-        mock_col1 = Mock()
-        mock_col1.__enter__ = Mock(return_value=None)
-        mock_col1.__exit__ = Mock(return_value=None)
-        mock_col2 = Mock()
-        mock_col2.__enter__ = Mock(return_value=None)
-        mock_col2.__exit__ = Mock(return_value=None)
-        with (
-            patch("streamlit.markdown"),
-            patch("streamlit.columns", return_value=(mock_col1, mock_col2)),
-            patch("streamlit.write"),
-        ):
-            web_interface._display_document_summary(data)
+    }
 
-    def test_display_document_segments(self, web_interface):
-        """Test _display_document_segments function."""
-        data = {
-            "segments": [
-                {"type": "medical", "text": "segment1"},
-                {"type": "diagnosis", "text": "segment2"},
-            ]
-        }
-        mock_col1 = Mock()
-        mock_col1.__enter__ = Mock(return_value=None)
-        mock_col1.__exit__ = Mock(return_value=None)
-        mock_col2 = Mock()
-        mock_col2.__enter__ = Mock(return_value=None)
-        mock_col2.__exit__ = Mock(return_value=None)
-        with (
-            patch("streamlit.markdown"),
-            patch("streamlit.columns", return_value=(mock_col1, mock_col2)),
-            patch("streamlit.multiselect"),
-            patch("streamlit.slider"),
-            patch("streamlit.expander"),
-            patch("streamlit.write"),
-            patch("streamlit.text_area"),
-            patch("streamlit.json"),
-        ):
-            web_interface._display_document_segments(data)
+    processing_history_page()
 
-    def test_display_document_timeline(self, web_interface):
-        """Test _display_document_timeline function."""
-        data = {
-            "timeline": [
-                {"date": "2023-01-01", "event": "event1"},
-                {"date": "2023-01-02", "event": "event2"},
-            ]
-        }
-        with (
-            patch("streamlit.markdown"),
-            patch("pandas.DataFrame"),
-            patch("streamlit.dataframe"),
-            patch("streamlit.line_chart"),
-        ):
-            web_interface._display_document_timeline(data)
-
-    def test_display_raw_json(self, web_interface):
-        """Test _display_raw_json function."""
-        data = {"key": "value"}
-        with (
-            patch("streamlit.markdown"),
-            patch("streamlit.code"),
-            patch("streamlit.download_button"),
-        ):
-            web_interface._display_raw_json(data)
-
-    def test_batch_processing_page(self, web_interface):
-        """Test _batch_processing_page function."""
-        mock_col1 = Mock()
-        mock_col1.__enter__ = Mock(return_value=None)
-        mock_col1.__exit__ = Mock(return_value=None)
-        mock_col2 = Mock()
-        mock_col2.__enter__ = Mock(return_value=None)
-        mock_col2.__exit__ = Mock(return_value=None)
-        mock_col3 = Mock()
-        mock_col3.__enter__ = Mock(return_value=None)
-        mock_col3.__exit__ = Mock(return_value=None)
-        with (
-            patch("streamlit.markdown"),
-            patch("streamlit.file_uploader") as mock_file_uploader,
-            patch("streamlit.info"),
-            patch("streamlit.expander"),
-            patch("streamlit.columns", return_value=(mock_col1, mock_col2, mock_col3)),
-            patch("streamlit.slider"),
-            patch("streamlit.checkbox"),
-            patch("streamlit.button"),
-        ):
-            mock_file = Mock()
-            mock_file.name = "test.pdf"
-            mock_file.size = 1024
-            mock_file_uploader.return_value = [mock_file]
-            web_interface._batch_processing_page()
-
-    def test_settings_page(self, web_interface):
-        """Test _settings_page function."""
-        mock_col1 = Mock()
-        mock_col1.__enter__ = Mock(return_value=None)
-        mock_col1.__exit__ = Mock(return_value=None)
-        mock_col2 = Mock()
-        mock_col2.__enter__ = Mock(return_value=None)
-        mock_col2.__exit__ = Mock(return_value=None)
-        with (
-            patch("streamlit.markdown"),
-            patch("streamlit.expander"),
-            patch("streamlit.json"),
-            patch("streamlit.columns", return_value=(mock_col1, mock_col2)),
-            patch("streamlit.info"),
-        ):
-            web_interface._settings_page()
+    mock_streamlit["subheader"].assert_any_call("Single Documents")
+    mock_streamlit["subheader"].assert_any_call("Batch Operations")
 
 
-class TestWebInterfaceHelpers:
-    """Test the helper functions in WebInterface."""
+def test_settings_page(mock_streamlit):
+    """Test settings page."""
+    settings_page()
 
-    def test_create_batch_zip(self, web_interface):
-        """Test _create_batch_zip function."""
-        results = [
-            {
-                "status": "completed",
-                "filename": "test1.pdf",
-                "data": {
-                    "segments": [
-                        {
-                            "document_type": "medical",
-                            "text": "segment1",
-                            "segment_id": "1",
-                            "text_content": "segment1",
-                            "page_start": 1,
-                            "page_end": 1,
-                        }
-                    ],
-                    "timeline": [{"date": "2023-01-01", "event": "event1"}],
-                },
-            },
-            {
-                "status": "completed",
-                "filename": "test2.pdf",
-                "data": {
-                    "segments": [
-                        {
-                            "document_type": "diagnosis",
-                            "text": "segment2",
-                            "segment_id": "2",
-                            "text_content": "segment2",
-                            "page_start": 1,
-                            "page_end": 1,
-                        }
-                    ],
-                    "timeline": [{"date": "2023-01-02", "event": "event2"}],
-                },
-            },
-            {"status": "error", "filename": "test3.pdf"},
-        ]
-        zip_data = web_interface._create_batch_zip(results)
-        assert isinstance(zip_data, bytes)
-        assert len(zip_data) > 0
+    mock_streamlit["title"].assert_called_with("Settings & Configuration")
+    mock_streamlit["json"].assert_called()
+    mock_streamlit["subheader"].assert_any_call("System Information")
+    mock_streamlit["subheader"].assert_any_call("Help & Documentation")
 
 
-def mock_open_json(data):
-    """Mock the open function for reading JSON."""
-    from unittest.mock import mock_open
+def test_display_results(mock_streamlit):
+    """Test display_results function."""
+    data = {
+        "page_count": 5,
+        "segments": [{"type": "test"}],
+        "timeline": [{"date": "2023-01-01"}],
+    }
+    display_results(data, "test.pdf")
 
-    mock_file = mock_open(read_data=json.dumps(data))
-    mock_file.return_value.__enter__.return_value = mock_file.return_value
-    return mock_file
+    mock_streamlit["tabs"].assert_called_once()
+    mock_streamlit["subheader"].assert_any_call("Summary")
+    mock_streamlit["subheader"].assert_any_call("Segments")
+    mock_streamlit["subheader"].assert_any_call("Timeline")
+    mock_streamlit["subheader"].assert_any_call("Raw JSON")
+    mock_streamlit["subheader"].assert_any_call("Export Options")
+
+
+def test_display_batch_results(mock_streamlit):
+    """Test display_batch_results function."""
+    results = [{"filename": "test.pdf", "status": "completed"}]
+    display_batch_results(results)
+
+    mock_streamlit["subheader"].assert_called_with("Batch Results")
+    mock_streamlit["dataframe"].assert_called_once()
+    mock_streamlit["download_button"].assert_called_once()
+
+
+def test_data_to_csv():
+    """Test data_to_csv utility."""
+    data = [{"col1": "val1", "col2": "val2"}]
+    csv_str = data_to_csv(data)
+    assert "col1,col2\nval1,val2\n" == csv_str
+
+
+def test_data_to_csv_empty():
+    """Test data_to_csv with empty data."""
+    assert data_to_csv([]) == ""
+
+
+def test_create_batch_zip():
+    """Test create_batch_zip utility."""
+    results = [
+        {"filename": "test1.pdf", "status": "completed", "data": {"key": "value"}},
+        {"filename": "test2.pdf", "status": "failed"},
+    ]
+    zip_bytes = create_batch_zip(results)
+    assert isinstance(zip_bytes, bytes)
+    assert len(zip_bytes) > 0
+
+    # Verify content
+    zip_io = BytesIO(zip_bytes)
+    with zipfile.ZipFile(zip_io, "r") as zf:
+        assert "test1.pdf_processed.json" in zf.namelist()
+        assert len(zf.namelist()) == 1
+
+
+@pytest.mark.parametrize(
+    "invalid_results",
+    [
+        [],  # empty
+        [{"filename": "test.pdf", "status": "completed", "data": None}],  # invalid data
+    ],
+)
+def test_create_batch_zip_edge_cases(invalid_results):
+    """Test create_batch_zip edge cases."""
+    zip_bytes = create_batch_zip(invalid_results)
+    assert len(zip_bytes) > 0  # Still produces empty zip

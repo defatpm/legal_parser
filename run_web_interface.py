@@ -9,7 +9,7 @@ from pathlib import Path
 def main():
     """Run the Streamlit web interface."""
     # Get the path to the web interface module
-    web_interface_path = Path(__file__).parent / "src" / "web_interface.py"
+    web_interface_path = Path(__file__).parent / "src" / "interfaces" / "web" / "app.py"
     # Check if the file exists
     if not web_interface_path.exists():
         print(f"Error: Web interface file not found at {web_interface_path}")

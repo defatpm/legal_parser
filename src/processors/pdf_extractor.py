@@ -53,9 +53,19 @@ class PDFExtractor(BaseProcessor):
             ocr_threshold: Minimum word count per page before applying OCR.
                           If None, uses value from configuration.
         """
+        # Initialize default values before calling super().__init__
+        # which will call _validate_processor_config
+        self.ocr_threshold = ocr_threshold or 40  # Default value
+        self.ocr_enabled = True
+        self.ocr_language = "eng"
+        self.ocr_dpi = 300
+        self.normalize_whitespace = True
+        self.min_text_length = 10
+
         # Initialize base processor
         super().__init__(config)
-        # Use provided value or fall back to config
+
+        # Now update with actual config values
         if ocr_threshold is not None:
             self.ocr_threshold = ocr_threshold
         else:
@@ -418,6 +428,30 @@ class PDFExtractor(BaseProcessor):
         # Remove empty lines
         lines = [line for line in lines if line]
         return "\n".join(lines)
+
+    def _apply_config_overrides(self, config: dict[str, Any]) -> None:
+        """Apply configuration overrides.
+
+        Args:
+            config: Configuration dictionary
+        """
+        if "ocr" in config:
+            ocr_config = config["ocr"]
+            if "enabled" in ocr_config:
+                self.ocr_enabled = ocr_config["enabled"]
+            if "confidence_threshold" in ocr_config:
+                self.ocr_threshold = ocr_config["confidence_threshold"]
+            if "language" in ocr_config:
+                self.ocr_language = ocr_config["language"]
+
+    def _validate_processor_config(self) -> None:
+        """Validate processor-specific configuration."""
+        if self.ocr_threshold < 0 or self.ocr_threshold > 100:
+            raise ValueError(
+                f"OCR threshold must be between 0-100, got {self.ocr_threshold}"
+            )
+        if not isinstance(self.ocr_language, str) or not self.ocr_language:
+            raise ValueError("OCR language must be a non-empty string")
 
 
 # Register the processor
