@@ -8,6 +8,7 @@ spacy>=3.7.0
 nltk>=3.8.0
 pandas>=2.0.0
 numpy>=1.24.0
+reportlab>=4.0.0
 
 # Date/Time Handling
 arrow>=1.3.0
