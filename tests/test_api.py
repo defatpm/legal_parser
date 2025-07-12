@@ -356,7 +356,9 @@ class TestTaskManager:
             "test.pdf", mock_file_path, processing_request
         )
         mock_processor = MagicMock()
-        mock_processor.process_pdf.return_value = mock_file_path
+        mock_result = MagicMock()
+        mock_result.output = ["page1", "page2"]  # Mock pages
+        mock_processor.process.return_value = mock_result
         await task_manager._process_task(
             task_manager.tasks[task_id], processor=mock_processor
         )

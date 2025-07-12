@@ -349,7 +349,6 @@ class TaskManager:
         task_info.status = ProcessingStatus.PROCESSING
         task_info.started_at = datetime.now()
         task_info.progress = 0.1
-        await self.update_task_status(task_info)
 
         try:
             # Create processor if not provided
@@ -394,7 +393,6 @@ class TaskManager:
             # Remove from active tasks
             if task_id in self.active_tasks:
                 del self.active_tasks[task_id]
-            await self.update_task_status(task_info)
 
 
 # Global task manager instance
