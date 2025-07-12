@@ -8,8 +8,8 @@ def data_to_csv(data: list[dict]) -> str:
     """Convert list of dicts to CSV string."""
     if not data:
         return ""
-    output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=data[0].keys())
+    output = StringIO(newline="")
+    writer = csv.DictWriter(output, fieldnames=data[0].keys(), lineterminator="\n")
     writer.writeheader()
     writer.writerows(data)
     return output.getvalue()

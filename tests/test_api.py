@@ -496,8 +496,20 @@ async def test_lifespan():
 
     app = FastAPI()
 
-    async with lifespan(app):
-        assert app.state.limiter is not None
+    # Mock the dependencies to avoid signal handler issues
+    with (
+        patch("src.api.main.get_task_manager") as mock_task_manager,
+        patch("src.api.main.cleanup_old_files") as mock_cleanup,
+        patch("src.api.main.shutdown_task_manager"),
+        patch("asyncio.get_event_loop") as mock_loop,
+    ):
+
+        mock_loop.return_value = MagicMock()
+        mock_cleanup.return_value = MagicMock()
+
+        async with lifespan(app):
+            assert app.state.limiter is not None
+            mock_task_manager.assert_called_once()
 
 
 @pytest.mark.asyncio
