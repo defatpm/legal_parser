@@ -36,4 +36,4 @@ openpyxl
 prometheus-fastapi-instrumentator
 slowapi
 httpx
-psutil
+psutiltextacy

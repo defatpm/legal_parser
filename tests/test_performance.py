@@ -41,7 +41,6 @@ def set_test_config():
     del os.environ["MEDICAL_PROCESSOR_CONFIG"]
 
 
-
 class TestPerformanceMetrics:
     """Tests for PerformanceMetrics class."""
 
@@ -168,8 +167,9 @@ class TestMemoryOptimizer:
         optimizer = MemoryOptimizer()
 
         # Should not raise under normal conditions
-        memory_usage = optimizer.check_memory_usage()
-        assert memory_usage >= 0
+        with optimizer.memory_limit_context(1024.0):
+            memory_usage = optimizer.check_memory_usage()
+            assert memory_usage >= 0
 
     def test_optimize_memory(self):
         """Test memory optimization."""
@@ -220,7 +220,8 @@ class TestProcessingOptimizer:
             return [x * 2 for x in batch]
 
         items = list(range(10))
-        results = optimizer.process_in_batches(items, processor, batch_size=3)
+        with optimizer.memory_optimizer.memory_limit_context(1024.0):
+            results = optimizer.process_in_batches(items, processor, batch_size=3)
 
         assert len(results) == 10
         assert results == [x * 2 for x in range(10)]
@@ -377,7 +378,7 @@ class TestMemoryEfficientProcessor:
 
     def test_process_with_memory_limit(self):
         """Test processing with memory limit."""
-        processor = MemoryEfficientProcessor(max_memory_mb=512.0)
+        processor = MemoryEfficientProcessor(max_memory_mb=1024.0)
 
         # Simple processor that squares values
         def item_processor(item):

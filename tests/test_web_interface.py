@@ -84,8 +84,18 @@ class TestWebInterface:
                             with patch("builtins.open", mock_open_json(mock_result)):
                                 web_interface._process_single_document(mock_file)
 
-            mock_session.processing_results.__setitem__.assert_called_with("test.pdf", {"data": mock_result, "processed_at": ANY, "file_size": 1024, "processing_time": 0.0})
-            mock_session.processing_status.__setitem__.assert_called_with("test.pdf", "completed")
+            mock_session.processing_results.__setitem__.assert_called_with(
+                "test.pdf",
+                {
+                    "data": mock_result,
+                    "processed_at": ANY,
+                    "file_size": 1024,
+                    "processing_time": 0.0,
+                },
+            )
+            mock_session.processing_status.__setitem__.assert_called_with(
+                "test.pdf", "completed"
+            )
 
     def test_display_document_summary(self, web_interface):
         """Test displaying document summary."""
@@ -118,6 +128,7 @@ class TestWebInterface:
         assert mock_markdown.call_count > 0
         assert mock_columns.call_count > 0
         assert mock_write.call_count > 0
+
 
 def mock_open_json(data):
     """Mock the open function for reading JSON."""

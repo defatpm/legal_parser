@@ -1,4 +1,3 @@
-
 from src.processors.pdf_extractor import PDFExtractor
 
 

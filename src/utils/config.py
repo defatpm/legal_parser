@@ -326,9 +326,13 @@ class ConfigManager:
         if "processing" in config_data:
             config.processing = ProcessingConfig(**config_data.get("processing", {}))
         if "pdf_extraction" in config_data:
-            config.pdf_extraction = PDFExtractionConfig(**config_data.get("pdf_extraction", {}))
+            config.pdf_extraction = PDFExtractionConfig(
+                **config_data.get("pdf_extraction", {})
+            )
         if "segmentation" in config_data:
-            config.segmentation = SegmentationConfig(**config_data.get("segmentation", {}))
+            config.segmentation = SegmentationConfig(
+                **config_data.get("segmentation", {})
+            )
         if "metadata_extraction" in config_data:
             config.metadata_extraction = MetadataExtractionConfig(
                 **config_data.get("metadata_extraction", {})

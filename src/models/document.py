@@ -79,9 +79,9 @@ class ProcessedDocument:
                     "text_content": seg.text_content,
                     "page_start": seg.page_start,
                     "page_end": seg.page_end,
-                    "date_of_service": seg.date_of_service.isoformat()
-                    if seg.date_of_service
-                    else None,
+                    "date_of_service": (
+                        seg.date_of_service.isoformat() if seg.date_of_service else None
+                    ),
                     "document_type": seg.document_type,
                     "provider_name": seg.provider_name,
                     "facility_name": seg.facility_name,

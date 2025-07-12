@@ -289,14 +289,18 @@ def convert_processing_result(result, task_id: str, filename: str) -> Processing
     """Convert internal processing result to API model."""
     return ProcessingResult(
         task_id=task_id,
-        status=ProcessingStatus.COMPLETED
-        if result.status.value == "completed"
-        else ProcessingStatus.FAILED,
+        status=(
+            ProcessingStatus.COMPLETED
+            if result.status.value == "completed"
+            else ProcessingStatus.FAILED
+        ),
         filename=filename,
         pages_processed=len(result.output) if result.output else 0,
-        ocr_pages=sum(1 for page in result.output if page.is_ocr_applied)
-        if result.output
-        else 0,
+        ocr_pages=(
+            sum(1 for page in result.output if page.is_ocr_applied)
+            if result.output
+            else 0
+        ),
         processing_time=result.processing_time or 0.0,
         file_size_mb=result.metadata.get("file_size_mb", 0.0),
         created_at=datetime.now(),

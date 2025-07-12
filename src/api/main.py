@@ -323,7 +323,9 @@ async def list_processors():
 
 
 @app.post("/upload", response_model=FileUploadResponse)
-async def upload_file(request: Request, file: UploadFile = File(...)) -> FileUploadResponse:
+async def upload_file(
+    request: Request, file: UploadFile = File(...)
+) -> FileUploadResponse:
     """Upload a file for processing."""
     validate_file_upload(file)
     try:

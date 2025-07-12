@@ -6,6 +6,7 @@ import io
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -27,7 +28,6 @@ def register_test_processor():
     registry.register(ConcretePDFExtractor)
     yield
     registry.clear()
-
 
 
 @pytest.fixture
@@ -486,3 +486,44 @@ class TestIntegration:
         status_data = status_response.json()
         assert status_data["task_id"] == task_id
         assert status_data["status"] in ["pending", "processing", "completed", "failed"]
+
+
+@patch("uvicorn.run")
+def test_main(mock_run):
+    from src.api.main import main
+
+    main()
+    mock_run.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_lifespan():
+    from fastapi import FastAPI
+
+    from src.api.main import lifespan
+
+    app = FastAPI()
+
+    async with lifespan(app):
+        assert app.state.limiter is not None
+
+
+@pytest.mark.asyncio
+async def test_cleanup_old_files(tmp_path):
+    import time
+
+    from src.api.main import cleanup_old_files, upload_dir
+
+    # Create a dummy file
+    dummy_file = upload_dir / "dummy.pdf"
+    dummy_file.touch()
+
+    # Make the file old
+    old_time = time.time() - 25 * 3600
+    import os
+
+    os.utime(dummy_file, (old_time, old_time))
+
+    await cleanup_old_files()
+
+    assert not dummy_file.exists()

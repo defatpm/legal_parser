@@ -71,8 +71,7 @@ class StreamingProcessor:
                     self.processed_count += 1
                     # Yield buffered items when buffer is full
                     if len(buffer) >= self.config.buffer_size:
-                        for buffered_item in buffer:
-                            yield buffered_item
+                        yield from buffer
                         perf.add_items(len(buffer))
                         buffer.clear()
                     # Create checkpoint periodically
@@ -82,8 +81,7 @@ class StreamingProcessor:
                     logger.error(f"Error processing item {self.processed_count}: {e}")
                     continue
             # Yield remaining buffered items
-            for buffered_item in buffer:
-                yield buffered_item
+            yield from buffer
             if buffer:
                 perf.add_items(len(buffer))
 
@@ -296,8 +294,8 @@ class StreamingPDFProcessor:
             config: Optional streaming configuration
         """
         self.config = config or StreamingConfig()
-        self.streaming_processor = StreamingProcessor(config)
-        self.memory_processor = MemoryEfficientProcessor(config.max_memory_mb)
+        self.streaming_processor = StreamingProcessor(self.config)
+        self.memory_processor = MemoryEfficientProcessor(self.config.max_memory_mb)
 
     def process_pdf_pages_streaming(
         self, pdf_path: Path, page_processor: Callable[[Any], Any]

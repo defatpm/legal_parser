@@ -29,7 +29,6 @@ from ..utils.exceptions import (
 from ..utils.performance import (
     get_processing_optimizer,
     performance_context,
-    performance_profile,
 )
 from .base import (
     BaseProcessor,
@@ -246,7 +245,6 @@ class PDFExtractor(BaseProcessor):
             raise OCRError(f"OCR processing failed: {e}") from e
 
     @handle_exceptions(reraise=True)
-    @performance_profile("pdf_extraction_pymupdf")
     def _extract_with_pymupdf(self, pdf_path: Path) -> list[PageContent]:
         """Primary extraction method using PyMuPDF.
 

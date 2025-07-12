@@ -7,11 +7,11 @@ import re
 from datetime import datetime
 
 import spacy
-from spacy.matcher import Matcher
 
 from ..models.document import DocumentSegment
 
 logger = logging.getLogger(__name__)
+import textacy.extract  # noqa: E402
 
 
 class MetadataExtractor:
@@ -26,10 +26,10 @@ class MetadataExtractor:
         try:
             self.nlp = spacy.load(spacy_model)
         except OSError:
-            logger.error(f"spaCy model '{spacy_model}' not found. Please download it by running 'python -m spacy download {spacy_model}'")
+            logger.error(
+                f"spaCy model '{spacy_model}' not found. Please download it by running 'python -m spacy download {spacy_model}'"
+            )
             raise
-        self.matcher = Matcher(self.nlp.vocab)
-        self._setup_patterns()
         self.document_type_keywords = self._build_document_type_keywords()
 
     def extract_metadata(
@@ -192,28 +192,9 @@ class MetadataExtractor:
         Returns:
             List of extracted keywords
         """
-        doc = self.nlp(text)
-        keywords = []
-        # Extract medical terms and important entities
-        for ent in doc.ents:
-            if ent.label_ in ["PERSON", "ORG", "GPE", "DATE", "CARDINAL"]:
-                keywords.append(ent.text)
-        # Extract noun phrases that might be medical terms
-        for chunk in doc.noun_chunks:
-            if len(chunk.text) > 3 and len(chunk.text) < 50:
-                keywords.append(chunk.text)
-        # Remove duplicates and limit to top keywords
-        unique_keywords = list(set(keywords))
-        return unique_keywords[:10]  # Limit to top 10 keywords
-
-    def _setup_patterns(self) -> None:
-        """Setup spaCy matcher patterns."""
-        # Date patterns
-        date_pattern = [{"SHAPE": "dd/dd/dddd"}, {"SHAPE": "dd-dd-dddd"}]
-        self.matcher.add("DATE_PATTERN", [date_pattern])
-        # Provider patterns
-        provider_pattern = [{"LOWER": "dr"}, {"IS_ALPHA": True}]
-        self.matcher.add("PROVIDER_PATTERN", [provider_pattern])
+        doc = textacy.make_spacy_doc(text, lang=self.nlp)
+        keywords = textacy.extract.keyterms.sgrank(doc, topn=10)
+        return [kw for kw, score in keywords]
 
     def _build_document_type_keywords(self) -> dict[str, list[str]]:
         """Build document type keyword mapping.

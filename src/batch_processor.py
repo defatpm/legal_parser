@@ -125,7 +125,7 @@ class BatchProcessor:
         """
         self.config = get_config()
         self.max_workers = (
-            max_workers or self.config.performance.parallel['workers'] or os.cpu_count()
+            max_workers or self.config.performance.parallel["workers"] or os.cpu_count()
         )
         self.progress_callback = progress_callback
         self.performance_monitor = PerformanceMonitor()
@@ -367,9 +367,9 @@ class BatchProcessor:
                     "input_path": str(job.input_path),
                     "output_path": str(job.output_path),
                     "status": job.status,
-                    "start_time": job.start_time.isoformat()
-                    if job.start_time
-                    else None,
+                    "start_time": (
+                        job.start_time.isoformat() if job.start_time else None
+                    ),
                     "end_time": job.end_time.isoformat() if job.end_time else None,
                     "error": job.error,
                     "result": job.result,
@@ -402,12 +402,16 @@ class BatchProcessor:
                 input_path=Path(job_data["input_path"]),
                 output_path=Path(job_data["output_path"]),
                 status=job_data["status"],
-                start_time=datetime.fromisoformat(job_data["start_time"])
-                if job_data["start_time"]
-                else None,
-                end_time=datetime.fromisoformat(job_data["end_time"])
-                if job_data["end_time"]
-                else None,
+                start_time=(
+                    datetime.fromisoformat(job_data["start_time"])
+                    if job_data["start_time"]
+                    else None
+                ),
+                end_time=(
+                    datetime.fromisoformat(job_data["end_time"])
+                    if job_data["end_time"]
+                    else None
+                ),
                 error=job_data["error"],
                 result=job_data["result"],
             )

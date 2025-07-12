@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 import time
 from pathlib import Path
 from uuid import uuid4
@@ -167,7 +168,8 @@ def main() -> None:
             _process_single_file(args)
     except Exception as e:
         logger.error(f"Processing failed: {e}")
-        raise
+        sys.exit(1)
+    sys.exit(0)
 
 
 def _process_single_file(args) -> None:

@@ -50,9 +50,9 @@ class TaskInfo:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "progress": self.progress,
             "current_page": self.current_page,
             "total_pages": self.total_pages,
@@ -271,15 +271,15 @@ class TaskManager:
             "total_requests": len(self.tasks),
             "completed_requests": len(completed_tasks),
             "failed_requests": self.total_failed,
-            "average_processing_time": total_processing_time / len(completed_tasks)
-            if completed_tasks
-            else 0.0,
-            "average_file_size_mb": total_file_size / len(completed_tasks)
-            if completed_tasks
-            else 0.0,
-            "average_pages_per_document": total_pages / len(completed_tasks)
-            if completed_tasks
-            else 0.0,
+            "average_processing_time": (
+                total_processing_time / len(completed_tasks) if completed_tasks else 0.0
+            ),
+            "average_file_size_mb": (
+                total_file_size / len(completed_tasks) if completed_tasks else 0.0
+            ),
+            "average_pages_per_document": (
+                total_pages / len(completed_tasks) if completed_tasks else 0.0
+            ),
             "total_pages_processed": total_pages,
             "total_ocr_pages": total_ocr_pages,
         }

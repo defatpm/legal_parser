@@ -23,6 +23,7 @@ def temp_dirs():
 
         yield {"temp": temp_path, "input": input_dir, "output": output_dir}
 
+
 @pytest.fixture
 def sample_pdf_files(temp_dirs):
     """Create sample PDF files for testing."""
@@ -44,7 +45,6 @@ def sample_pdf_files(temp_dirs):
         pdf_files.append(pdf_file)
 
     return pdf_files
-
 
 
 class TestBatchJob:

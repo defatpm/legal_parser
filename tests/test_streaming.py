@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 import pytest
@@ -40,6 +39,22 @@ class TestStreamingProcessor:
         assert results == [x * 2 for x in range(10)]
         assert processor.processed_count == 10
 
+    def test_stream_process_with_error(self):
+        """Test streaming processing with an error."""
+        processor = StreamingProcessor()
+
+        def item_processor(item):
+            if item == 5:
+                raise ValueError("Test error")
+            return item * 2
+
+        items = iter(range(10))
+        results = list(processor.stream_process(items, item_processor))
+
+        assert len(results) == 9
+        assert results == [0, 2, 4, 6, 8, 12, 14, 16, 18]
+        assert processor.processed_count == 9
+
 
 class TestChunkedFileProcessor:
     """Tests for ChunkedFileProcessor class."""
@@ -66,6 +81,22 @@ class TestChunkedFileProcessor:
 
         assert len(results) > 0
         assert sum(results) > 0  # Total bytes processed
+
+    def test_process_file_chunks_with_error(self, tmp_path):
+        """Test processing file in chunks with an error."""
+        processor = ChunkedFileProcessor(chunk_size=10)
+
+        file_path = tmp_path / "test.txt"
+        file_path.write_text("Hello, World! This is a test file.")
+
+        def chunk_processor(chunk):
+            if b"This" in chunk:
+                raise ValueError("Test error")
+            return len(chunk)
+
+        results = list(processor.process_file_chunks(file_path, chunk_processor))
+
+        assert len(results) > 0
 
     def test_process_nonexistent_file(self):
         """Test processing non-existent file."""

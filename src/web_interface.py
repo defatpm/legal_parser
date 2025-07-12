@@ -696,12 +696,16 @@ class WebInterface:
                     "Filename": result["filename"],
                     "Status": result["status"],
                     "Duration (s)": result.get("duration", 0),
-                    "Pages": result.get("result", {}).get("pages", 0)
-                    if result.get("result")
-                    else 0,
-                    "Segments": result.get("result", {}).get("segments", 0)
-                    if result.get("result")
-                    else 0,
+                    "Pages": (
+                        result.get("result", {}).get("pages", 0)
+                        if result.get("result")
+                        else 0
+                    ),
+                    "Segments": (
+                        result.get("result", {}).get("segments", 0)
+                        if result.get("result")
+                        else 0
+                    ),
                     "Error": result.get("error", ""),
                 }
             )
@@ -905,7 +909,8 @@ class WebInterface:
         st.markdown("### ❓ Help & Documentation")
 
         with st.expander("📖 How to Use"):
-            st.markdown("""
+            st.markdown(
+                """
             **Single Document Processing:**
             1. Go to the 'Single Document' page
             2. Upload a PDF file
@@ -925,10 +930,12 @@ class WebInterface:
             - **Timeline:** Chronological events
             - **Raw JSON:** Complete processing output
             - **Export:** Download in various formats
-            """)
+            """
+            )
 
         with st.expander("🔧 Troubleshooting"):
-            st.markdown("""
+            st.markdown(
+                """
             **Common Issues:**
             - **Large files:** Files over 100MB may take longer to process
             - **Scanned PDFs:** OCR processing may be slower
@@ -940,7 +947,8 @@ class WebInterface:
             - Adjust worker count based on system resources
             - Monitor processing progress
             - Clear history regularly to save memory
-            """)
+            """
+            )
 
 
 def main():
