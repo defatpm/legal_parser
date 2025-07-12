@@ -179,9 +179,10 @@ def _process_single_file(args) -> None:
     print(f"Processing completed! Output saved to: {output_path}")
 
 
-def _process_batch(args) -> None:
+def _process_batch(args, batch_processor_class=None) -> None:
     """Process multiple PDF files in batch mode."""
-    from .batch_processor import BatchProcessor
+    if batch_processor_class is None:
+        from .batch_processor import BatchProcessor as batch_processor_class
 
     # Determine input directory
     input_dir = args.input_dir or args.input.parent if args.input else None
@@ -195,7 +196,7 @@ def _process_batch(args) -> None:
     if args.progress:
         progress_callback = _print_progress
     # Create batch processor
-    batch_processor = BatchProcessor(
+    batch_processor = batch_processor_class(
         max_workers=args.workers, progress_callback=progress_callback
     )
     # Setup resume file

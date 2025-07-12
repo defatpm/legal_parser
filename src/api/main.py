@@ -67,6 +67,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     # Startup
     logger.info("Starting Medical Record Processor API")
+    app.state.limiter = limiter  # Add this line
     await get_task_manager()
     # Start cleanup task
     cleanup_task = asyncio.create_task(cleanup_old_files())
@@ -105,8 +106,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add the rate limiter to the app
-app.state.limiter = limiter
+# Add the rate limiter to the app - This is now done in the lifespan
+# app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Instrument the app with Prometheus
@@ -215,24 +216,28 @@ def validate_file_upload(file: UploadFile) -> None:
 
 
 # Background tasks
+async def _cleanup_files_and_tasks():
+    """The actual logic for cleaning up files and tasks."""
+    try:
+        # Clean up files older than 24 hours
+        cutoff_time = datetime.now().timestamp() - 24 * 3600
+        for file_path in upload_dir.iterdir():
+            if file_path.is_file() and file_path.stat().st_mtime < cutoff_time:
+                file_path.unlink()
+                logger.debug(f"Cleaned up old file: {file_path}")
+
+        # Clean up old tasks
+        task_manager = await get_task_manager()
+        await task_manager.cleanup_old_tasks(24)
+
+    except Exception as e:
+        logger.error(f"Error during cleanup: {e}")
+
+
 async def cleanup_old_files():
     """Clean up old uploaded files."""
     while True:
-        try:
-            # Clean up files older than 24 hours
-            cutoff_time = datetime.now().timestamp() - 24 * 3600
-            for file_path in upload_dir.iterdir():
-                if file_path.is_file() and file_path.stat().st_mtime < cutoff_time:
-                    file_path.unlink()
-                    logger.debug(f"Cleaned up old file: {file_path}")
-
-            # Clean up old tasks
-            task_manager = await get_task_manager()
-            await task_manager.cleanup_old_tasks(24)
-
-        except Exception as e:
-            logger.error(f"Error during cleanup: {e}")
-
+        await _cleanup_files_and_tasks()
         # Sleep for 1 hour
         await asyncio.sleep(3600)
 

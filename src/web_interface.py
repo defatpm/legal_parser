@@ -783,7 +783,7 @@ class WebInterface:
         if st.session_state.processing_results:
             st.markdown("### 📄 Single Document History")
 
-            for file_key, result in st.session_state.processing_results.items():
+            for file_key, result in list(st.session_state.processing_results.items()):
                 with st.expander(f"📄 {file_key} - {result['processed_at'][:19]}"):
                     col1, col2, col3 = st.columns(3)
 
