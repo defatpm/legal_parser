@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import sys
@@ -94,14 +95,20 @@ class PDFProcessor:
             )
 
 
-def main() -> None:
-    """Main entry point for command-line usage."""
-    import argparse
-
+def _create_argument_parser() -> argparse.ArgumentParser:
+    """Create and configure the argument parser."""
     parser = argparse.ArgumentParser(
         description="Process medical record PDFs into structured JSON"
     )
-    # Input arguments
+    _add_input_arguments(parser)
+    _add_output_arguments(parser)
+    _add_batch_arguments(parser)
+    _add_other_arguments(parser)
+    return parser
+
+
+def _add_input_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add input-related arguments to parser."""
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--input", type=Path, help="Path to input PDF file")
     group.add_argument(
@@ -109,7 +116,10 @@ def main() -> None:
         type=Path,
         help="Directory containing PDF files for batch processing",
     )
-    # Output arguments
+
+
+def _add_output_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add output-related arguments to parser."""
     parser.add_argument(
         "--output",
         type=Path,
@@ -121,7 +131,10 @@ def main() -> None:
     parser.add_argument(
         "--excel-output", type=Path, help="Path to output Excel files (batch mode only)"
     )
-    # Batch processing arguments
+
+
+def _add_batch_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add batch processing arguments to parser."""
     parser.add_argument(
         "--batch", action="store_true", help="Enable batch processing mode"
     )
@@ -147,24 +160,36 @@ def main() -> None:
         type=Path,
         help="Path to resume file (default: .batch_resume.json)",
     )
-    # Other arguments
+
+
+def _add_other_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add other miscellaneous arguments to parser."""
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
     parser.add_argument(
         "--progress",
         action="store_true",
         help="Show progress bar during batch processing",
     )
-    args = parser.parse_args()
-    # Setup logging with configuration
-    config = get_config()
+
+
+def _setup_logging(args, config) -> None:
+    """Configure logging based on arguments and config."""
     level = logging.DEBUG if args.verbose else getattr(logging, config.logging.level)
     logging.basicConfig(level=level, format=config.logging.format)
+
+
+def main() -> None:
+    """Main entry point for command-line usage."""
+    parser = _create_argument_parser()
+    args = parser.parse_args()
+
+    config = get_config()
+    _setup_logging(args, config)
+
     try:
         if args.batch or args.input_dir:
-            # Batch processing mode
             _process_batch(args)
         else:
-            # Single file processing mode
             _process_single_file(args)
     except Exception as e:
         logger.error(f"Processing failed: {e}")
