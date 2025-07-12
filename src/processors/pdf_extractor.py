@@ -208,12 +208,17 @@ class PDFExtractor(BaseProcessor):
                 field_name="file_size",
                 field_value=f"{file_size_mb:.1f}MB",
             )
-        with error_context("pdf_extraction", pdf_path=str(pdf_path)):
-            return graceful_degradation(
-                self._extract_with_pymupdf, self._extract_with_pdfplumber, pdf_path
-            )
+        with error_context({"operation": "pdf_extraction", "pdf_path": str(pdf_path)}):
 
-    @retry_on_error(max_retries=2, delay=0.5, exceptions=(OCRError, RuntimeError))
+            @graceful_degradation(self._extract_with_pdfplumber)
+            def extract(pdf_path: Path) -> list[PageContent]:
+                return self._extract_with_pymupdf(pdf_path)
+
+            return extract(pdf_path)
+
+    @retry_on_error(
+        max_retries=2, backoff_factor=0.5, retryable_exceptions=(OCRError, RuntimeError)
+    )
     def _apply_ocr_to_page(self, page: fitz.Page) -> str:
         """Apply OCR to a single page using Tesseract.
 
@@ -244,7 +249,7 @@ class PDFExtractor(BaseProcessor):
         except Exception as e:
             raise OCRError(f"OCR processing failed: {e}") from e
 
-    @handle_exceptions(reraise=True)
+    @handle_exceptions(raise_critical=True)
     def _extract_with_pymupdf(self, pdf_path: Path) -> list[PageContent]:
         """Primary extraction method using PyMuPDF.
 
@@ -343,7 +348,7 @@ class PDFExtractor(BaseProcessor):
             logger.error(f"Failed to process page {page_num + 1}: {e}")
             return None
 
-    @handle_exceptions(reraise=True)
+    @handle_exceptions(raise_critical=True)
     def _extract_with_pdfplumber(self, pdf_path: Path) -> list[PageContent]:
         """Fallback extraction using pdfplumber.
 

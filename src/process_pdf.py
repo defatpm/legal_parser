@@ -179,26 +179,22 @@ def _process_single_file(args) -> None:
     print(f"Processing completed! Output saved to: {output_path}")
 
 
-def _process_batch(args, batch_processor_class=None) -> None:
+def _process_batch(args, batch_processor=None) -> None:
     """Process multiple PDF files in batch mode."""
-    if batch_processor_class is None:
-        from .batch_processor import BatchProcessor as batch_processor_class
+    if batch_processor is None:
+        from .batch_processor import BatchProcessor
 
-    # Determine input directory
+        progress_callback = _print_progress if args.progress else None
+        batch_processor = BatchProcessor(
+            max_workers=args.workers, progress_callback=progress_callback
+        )
     input_dir = args.input_dir or args.input.parent if args.input else None
     if not input_dir:
         raise ValueError("Input directory required for batch processing")
-    # Determine output directory
     output_dir = args.output or (input_dir / "output")
     output_dir.mkdir(parents=True, exist_ok=True)
-    # Setup progress callback
-    progress_callback = None
     if args.progress:
-        progress_callback = _print_progress
-    # Create batch processor
-    batch_processor = batch_processor_class(
-        max_workers=args.workers, progress_callback=progress_callback
-    )
+        pass
     # Setup resume file
     resume_file = args.resume_file or (input_dir / ".batch_resume.json")
     batch_processor.set_resume_file(resume_file)

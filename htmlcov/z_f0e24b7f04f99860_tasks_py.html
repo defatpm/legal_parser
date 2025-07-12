@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for src/api/tasks.py: 63%</title>
+    <title>Coverage for src/api/tasks.py: 69%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_81f8c14c.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>src/api/tasks.py</b>:
-            <span class="pc_cov">63%</span>
+            <span class="pc_cov">69%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -55,8 +55,8 @@
         </aside>
         <h2>
             <span class="text">182 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">114<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">68<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">126<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">56<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_145eef247bfb46b6_batch_processor_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 12:44 -0500
+            created at 2025-07-12 02:38 -0500
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -132,9 +132,9 @@
     <p class="pln"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">            <span class="str">"status"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">status</span><span class="op">.</span><span class="nam">value</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t51" href="#t51">51</a></span><span class="t">            <span class="str">"created_at"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">created_at</span><span class="op">.</span><span class="nam">isoformat</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">            <span class="str">"started_at"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">started_at</span><span class="op">.</span><span class="nam">isoformat</span><span class="op">(</span><span class="op">)</span> <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">started_at</span> <span class="key">else</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">            <span class="str">"completed_at"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">completed_at</span><span class="op">.</span><span class="nam">isoformat</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t54" href="#t54">54</a></span><span class="t">            <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">completed_at</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">            <span class="key">else</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">            <span class="str">"completed_at"</span><span class="op">:</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t54" href="#t54">54</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">completed_at</span><span class="op">.</span><span class="nam">isoformat</span><span class="op">(</span><span class="op">)</span> <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">completed_at</span> <span class="key">else</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">            <span class="str">"progress"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">progress</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">            <span class="str">"current_page"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">current_page</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">            <span class="str">"total_pages"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">total_pages</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -180,22 +180,22 @@
     <p class="pln"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">    <span class="key">async</span> <span class="key">def</span> <span class="nam">stop</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">        <span class="str">"""Stop the task manager and workers."""</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">self</span><span class="op">.</span><span class="nam">running</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">self</span><span class="op">.</span><span class="nam">running</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t102" href="#t102">102</a></span><span class="t">            <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">running</span> <span class="op">=</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">running</span> <span class="op">=</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t">        <span class="com"># Cancel all active tasks</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">        <span class="key">for</span> <span class="nam">task</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">active_tasks</span><span class="op">.</span><span class="nam">values</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">        <span class="key">for</span> <span class="nam">task</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">active_tasks</span><span class="op">.</span><span class="nam">values</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">            <span class="nam">task</span><span class="op">.</span><span class="nam">cancel</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t">        <span class="com"># Cancel all workers</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t">        <span class="key">for</span> <span class="nam">worker</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">workers</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t110" href="#t110">110</a></span><span class="t">            <span class="nam">worker</span><span class="op">.</span><span class="nam">cancel</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t">        <span class="key">for</span> <span class="nam">worker</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">workers</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t110" href="#t110">110</a></span><span class="t">            <span class="nam">worker</span><span class="op">.</span><span class="nam">cancel</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t111" href="#t111">111</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t112" href="#t112">112</a></span><span class="t">        <span class="com"># Wait for workers to finish</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">        <span class="key">await</span> <span class="nam">asyncio</span><span class="op">.</span><span class="nam">gather</span><span class="op">(</span><span class="op">*</span><span class="nam">self</span><span class="op">.</span><span class="nam">workers</span><span class="op">,</span> <span class="nam">return_exceptions</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">workers</span><span class="op">.</span><span class="nam">clear</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">active_tasks</span><span class="op">.</span><span class="nam">clear</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t">        <span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span><span class="str">"Stopped task manager"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">        <span class="key">await</span> <span class="nam">asyncio</span><span class="op">.</span><span class="nam">gather</span><span class="op">(</span><span class="op">*</span><span class="nam">self</span><span class="op">.</span><span class="nam">workers</span><span class="op">,</span> <span class="nam">return_exceptions</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">workers</span><span class="op">.</span><span class="nam">clear</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">active_tasks</span><span class="op">.</span><span class="nam">clear</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t">        <span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span><span class="str">"Stopped task manager"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t117" href="#t117">117</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t118" href="#t118">118</a></span><span class="t">    <span class="key">async</span> <span class="key">def</span> <span class="nam">submit_task</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t119" href="#t119">119</a></span><span class="t">        <span class="nam">self</span><span class="op">,</span> <span class="nam">filename</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span> <span class="nam">file_path</span><span class="op">:</span> <span class="nam">Path</span><span class="op">,</span> <span class="nam">request</span><span class="op">:</span> <span class="nam">ProcessingRequest</span>&nbsp;</span><span class="r"></span></p>
@@ -353,15 +353,15 @@
     <p class="pln"><span class="n"><a id="t271" href="#t271">271</a></span><span class="t">            <span class="str">"total_requests"</span><span class="op">:</span> <span class="nam">len</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">tasks</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t272" href="#t272">272</a></span><span class="t">            <span class="str">"completed_requests"</span><span class="op">:</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t273" href="#t273">273</a></span><span class="t">            <span class="str">"failed_requests"</span><span class="op">:</span> <span class="nam">self</span><span class="op">.</span><span class="nam">total_failed</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t274" href="#t274">274</a></span><span class="t">            <span class="str">"average_processing_time"</span><span class="op">:</span> <span class="nam">total_processing_time</span> <span class="op">/</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t275" href="#t275">275</a></span><span class="t">            <span class="key">if</span> <span class="nam">completed_tasks</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t276" href="#t276">276</a></span><span class="t">            <span class="key">else</span> <span class="num">0.0</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t277" href="#t277">277</a></span><span class="t">            <span class="str">"average_file_size_mb"</span><span class="op">:</span> <span class="nam">total_file_size</span> <span class="op">/</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t278" href="#t278">278</a></span><span class="t">            <span class="key">if</span> <span class="nam">completed_tasks</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t279" href="#t279">279</a></span><span class="t">            <span class="key">else</span> <span class="num">0.0</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t280" href="#t280">280</a></span><span class="t">            <span class="str">"average_pages_per_document"</span><span class="op">:</span> <span class="nam">total_pages</span> <span class="op">/</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t281" href="#t281">281</a></span><span class="t">            <span class="key">if</span> <span class="nam">completed_tasks</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t282" href="#t282">282</a></span><span class="t">            <span class="key">else</span> <span class="num">0.0</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t274" href="#t274">274</a></span><span class="t">            <span class="str">"average_processing_time"</span><span class="op">:</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t275" href="#t275">275</a></span><span class="t">                <span class="nam">total_processing_time</span> <span class="op">/</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span> <span class="key">if</span> <span class="nam">completed_tasks</span> <span class="key">else</span> <span class="num">0.0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t276" href="#t276">276</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t277" href="#t277">277</a></span><span class="t">            <span class="str">"average_file_size_mb"</span><span class="op">:</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t278" href="#t278">278</a></span><span class="t">                <span class="nam">total_file_size</span> <span class="op">/</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span> <span class="key">if</span> <span class="nam">completed_tasks</span> <span class="key">else</span> <span class="num">0.0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t279" href="#t279">279</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t280" href="#t280">280</a></span><span class="t">            <span class="str">"average_pages_per_document"</span><span class="op">:</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t281" href="#t281">281</a></span><span class="t">                <span class="nam">total_pages</span> <span class="op">/</span> <span class="nam">len</span><span class="op">(</span><span class="nam">completed_tasks</span><span class="op">)</span> <span class="key">if</span> <span class="nam">completed_tasks</span> <span class="key">else</span> <span class="num">0.0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t282" href="#t282">282</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t283" href="#t283">283</a></span><span class="t">            <span class="str">"total_pages_processed"</span><span class="op">:</span> <span class="nam">total_pages</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t284" href="#t284">284</a></span><span class="t">            <span class="str">"total_ocr_pages"</span><span class="op">:</span> <span class="nam">total_ocr_pages</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t285" href="#t285">285</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
@@ -496,9 +496,9 @@
     <p class="run"><span class="n"><a id="t414" href="#t414">414</a></span><span class="t"><span class="key">async</span> <span class="key">def</span> <span class="nam">shutdown_task_manager</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t415" href="#t415">415</a></span><span class="t">    <span class="str">"""Shutdown the global task manager."""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t416" href="#t416">416</a></span><span class="t">    <span class="key">global</span> <span class="nam">_task_manager</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t417" href="#t417">417</a></span><span class="t">    <span class="key">if</span> <span class="nam">_task_manager</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t418" href="#t418">418</a></span><span class="t">        <span class="key">await</span> <span class="nam">_task_manager</span><span class="op">.</span><span class="nam">stop</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t419" href="#t419">419</a></span><span class="t">        <span class="nam">_task_manager</span> <span class="op">=</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t417" href="#t417">417</a></span><span class="t">    <span class="key">if</span> <span class="nam">_task_manager</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t418" href="#t418">418</a></span><span class="t">        <span class="key">await</span> <span class="nam">_task_manager</span><span class="op">.</span><span class="nam">stop</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t419" href="#t419">419</a></span><span class="t">        <span class="nam">_task_manager</span> <span class="op">=</span> <span class="key">None</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -508,7 +508,7 @@
             <a class="nav" href="z_145eef247bfb46b6_batch_processor_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 12:44 -0500
+            created at 2025-07-12 02:38 -0500
         </p>
     </div>
 </footer>

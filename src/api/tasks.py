@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from ..processors.pdf_extractor import PDFExtractor
 from ..utils.error_handler import get_error_handler
 from ..utils.performance import get_performance_monitor
 from .models import (
@@ -323,8 +322,10 @@ class TaskManager:
                     task_id = await asyncio.wait_for(
                         self.processing_queue.get(), timeout=1.0
                     )
-                    # Process the task
-                    await self._process_task(task_id, worker_name)
+                    # Get task info and process
+                    task_info = self.tasks.get(task_id)
+                    if task_info:
+                        await self._process_task(task_info)
                 except TimeoutError:
                     # Continue to check if we should stop
                     continue
@@ -335,36 +336,35 @@ class TaskManager:
             pass
         logger.info(f"Stopped worker {worker_name}")
 
-    async def _process_task(self, task_id: str, worker_name: str):
+    async def _process_task(self, task_info: TaskInfo, processor=None):
         """Process a single task.
 
         Args:
-            task_id: Task ID
-            worker_name: Name of the processing worker
+            task_info: Task information object
+            processor: Optional processor instance to use
         """
-        task_info = self.tasks.get(task_id)
-        if not task_info:
-            logger.warning(f"Task {task_id} not found")
-            return
-        logger.info(f"Worker {worker_name} processing task {task_id}")
+        task_id = task_info.task_id
+        logger.info(f"Processing task {task_id}")
         # Update task status
         task_info.status = ProcessingStatus.PROCESSING
         task_info.started_at = datetime.now()
+        task_info.progress = 0.1
+        await self.update_task_status(task_info)
+
         try:
-            # Create processor with custom config
-            processor_config = {
-                "ocr_enabled": task_info.request.ocr_enabled,
-                "ocr_language": task_info.request.ocr_language,
-                "normalize_whitespace": task_info.request.normalize_whitespace,
-                "min_text_length": task_info.request.min_text_length,
-            }
-            processor = PDFExtractor(config=processor_config)
+            # Create processor if not provided
+            if processor is None:
+                from ..process_pdf import PDFProcessor
+
+                processor = PDFProcessor()
+
             # Process the file
             start_time = datetime.now()
             result = await asyncio.get_event_loop().run_in_executor(
                 None, lambda: processor.process(task_info.file_path)
             )
             processing_time = (datetime.now() - start_time).total_seconds()
+
             # Update task with result
             task_info.result = result
             task_info.status = ProcessingStatus.COMPLETED
@@ -377,6 +377,7 @@ class TaskManager:
             logger.info(
                 f"Task {task_id} completed successfully in {processing_time:.2f}s"
             )
+
         except Exception as e:
             # Handle processing error
             task_info.status = ProcessingStatus.FAILED
@@ -388,10 +389,12 @@ class TaskManager:
                 e, {"task_id": task_id, "filename": task_info.filename}
             )
             logger.error(f"Task {task_id} failed: {e}")
+
         finally:
             # Remove from active tasks
             if task_id in self.active_tasks:
                 del self.active_tasks[task_id]
+            await self.update_task_status(task_info)
 
 
 # Global task manager instance

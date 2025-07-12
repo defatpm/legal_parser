@@ -84,11 +84,11 @@ You can interact with Legal Parser in two primary ways:
 
 ### 1. Interactive Web Interface
 
-The most user-friendly way to use the tool.
+The most user-friendly way to use the tool. It supports single and batch document processing with real-time progress tracking and results visualization.
 
 **To run the web interface:**
 ```bash
-poetry run streamlit run src/legal_parser/web/app.py
+streamlit run src/web_interface.py
 ```
 Navigate to `http://localhost:8501` in your browser to upload files and view results.
 
@@ -98,15 +98,11 @@ Ideal for scripting and integration into automated workflows.
 
 **To process a single PDF:**
 ```bash
-poetry run python src/legal_parser/main.py process-file --input-path path/to/your/document.pdf --output-path path/to/output.json
-```
-
-**To process a directory of PDFs:**
-```bash
-poetry run python src/legal_parser/main.py process-dir --input-path /path/to/docs --output-path /path/to/output_dir
+python src/process_pdf.py --input path/to/your/document.pdf --output path/to/output.json
 ```
 
 ---
+
 
 ## 🗺️ Roadmap
 

@@ -865,17 +865,23 @@ class WebInterface:
                 "processing": {
                     "max_file_size_mb": self.config.processing.max_file_size_mb,
                     "timeout": {
-                        "pdf_extraction": self.config.processing.timeout.pdf_extraction,
-                        "segmentation": self.config.processing.timeout.segmentation,
-                        "metadata_extraction": self.config.processing.timeout.metadata_extraction,
-                        "timeline_building": self.config.processing.timeout.timeline_building,
+                        "pdf_extraction": self.config.processing.timeout[
+                            "pdf_extraction"
+                        ],
+                        "segmentation": self.config.processing.timeout["segmentation"],
+                        "metadata_extraction": self.config.processing.timeout[
+                            "metadata_extraction"
+                        ],
+                        "timeline_building": self.config.processing.timeout[
+                            "timeline_building"
+                        ],
                     },
                 },
                 "performance": {
                     "parallel": {
-                        "enabled": self.config.performance.parallel.enabled,
-                        "workers": self.config.performance.parallel.workers,
-                        "chunk_size": self.config.performance.parallel.chunk_size,
+                        "enabled": self.config.performance.parallel["enabled"],
+                        "workers": self.config.performance.parallel["workers"],
+                        "chunk_size": self.config.performance.parallel["chunk_size"],
                     }
                 },
             }

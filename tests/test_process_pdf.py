@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.process_pdf import PDFProcessor, main
+from src.process_pdf import PDFProcessor
 from tests.test_utils import ConcretePDFExtractor
 
 
@@ -14,7 +14,7 @@ def sample_pdf_path(tmp_path):
     return pdf_path
 
 
-def test_process_pdf(sample_pdf_path, tmp_path):
+def test_process_pdf_no_mock(sample_pdf_path, tmp_path):
     output_path = tmp_path / "output.json"
     processor = PDFProcessor(extractor=ConcretePDFExtractor())
 
@@ -38,23 +38,57 @@ def test_process_pdf(sample_pdf_path, tmp_path):
         assert isinstance(data, dict)
 
 
-@patch("src.process_pdf._process_single_file")
-def test_main_single_file(mock_process_single, sample_pdf_path):
-    with (
-        patch("sys.argv", ["prog", "--input", str(sample_pdf_path)]),
-        pytest.raises(SystemExit) as e,
-    ):
-        main()
-    assert e.type is SystemExit
-    mock_process_single.assert_called_once()
+@patch("src.process_pdf.PDFProcessor")
+def test_process_single_file(mock_pdf_processor, sample_pdf_path, tmp_path):
+    import argparse
+
+    from src.process_pdf import _process_single_file
+
+    output_path = tmp_path / "output"
+    args = argparse.Namespace(
+        input=sample_pdf_path, output=output_path, verbose=False, batch=False
+    )
+    _process_single_file(args)
+    mock_pdf_processor.return_value.process_pdf.assert_called_once_with(
+        sample_pdf_path, output_path
+    )
 
 
-@patch("src.process_pdf._process_batch")
-def test_main_batch_file(mock_process_batch, sample_pdf_path):
-    with (
-        patch("sys.argv", ["prog", "--input", str(sample_pdf_path), "--batch"]),
-        pytest.raises(SystemExit) as e,
-    ):
-        main()
-    assert e.type is SystemExit
-    mock_process_batch.assert_called_once()
+def test_process_batch(sample_pdf_path, tmp_path):
+    import argparse
+
+    from src.process_pdf import _process_batch
+
+    output_path = tmp_path / "output"
+    args = argparse.Namespace(
+        input_dir=sample_pdf_path.parent,
+        output=output_path,
+        workers=None,
+        progress=False,
+        resume=False,
+        resume_file=None,
+        pattern="*.pdf",
+        recursive=False,
+        input=sample_pdf_path,
+        csv_output=None,
+        excel_output=None,
+    )
+    mock_batch_processor = MagicMock()
+    mock_batch_processor.process_batch.return_value = MagicMock(
+        total_jobs=1,
+        successful_jobs=1,
+        failed_jobs=0,
+        average_duration=1.0,
+        fastest_job=1.0,
+        slowest_job=1.0,
+        total_pages_processed=1,
+        throughput_jobs_per_minute=1.0,
+        throughput_pages_per_minute=1.0,
+        memory_usage_mb=1.0,
+        errors=[],
+    )
+    _process_batch(args, batch_processor=mock_batch_processor)
+    mock_batch_processor.add_file.assert_called_once_with(
+        sample_pdf_path, output_path / f"{sample_pdf_path.stem}.json"
+    )
+    mock_batch_processor.process_batch.assert_called_once()

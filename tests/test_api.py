@@ -6,7 +6,7 @@ import io
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -350,27 +350,17 @@ class TestTaskManager:
         assert "total_pages_processed" in stats
 
     @pytest.mark.asyncio
-    async def test_cleanup_old_tasks(
-        self, task_manager, mock_file_path, processing_request
-    ):
-        """Test cleanup of old tasks."""
-        # Submit and cancel a task
+    async def test_process_task(self, task_manager, mock_file_path, processing_request):
+        """Test _process_task function."""
         task_id = await task_manager.submit_task(
             "test.pdf", mock_file_path, processing_request
         )
-        await task_manager.cancel_task(task_id)
-
-        # Initially task should exist
-        assert task_id in task_manager.tasks
-
-        # Cleanup with 0 hours (should remove all completed tasks)
-        await task_manager.cleanup_old_tasks(0)
-
-        # Task should be removed
-        assert task_id not in task_manager.tasks
-
-        # Cleanup
-        mock_file_path.unlink()
+        mock_processor = MagicMock()
+        mock_processor.process_pdf.return_value = mock_file_path
+        await task_manager._process_task(
+            task_manager.tasks[task_id], processor=mock_processor
+        )
+        assert task_manager.tasks[task_id].status == ProcessingStatus.COMPLETED
 
 
 class TestTaskInfo:
@@ -512,7 +502,7 @@ async def test_lifespan():
 async def test_cleanup_old_files(tmp_path):
     import time
 
-    from src.api.main import cleanup_old_files, upload_dir
+    from src.api.main import _cleanup_files_and_tasks, upload_dir
 
     # Create a dummy file
     dummy_file = upload_dir / "dummy.pdf"
@@ -524,6 +514,6 @@ async def test_cleanup_old_files(tmp_path):
 
     os.utime(dummy_file, (old_time, old_time))
 
-    await cleanup_old_files()
+    await _cleanup_files_and_tasks()
 
     assert not dummy_file.exists()

@@ -1,19 +1,20 @@
-# Code Style & Quality Guide  
+# Contributing to Legal Parser
+
+We welcome contributions to this project! Please follow these guidelines to ensure a smooth development process.
+
+## Code Style & Quality
+
 *Write the simplest code that **cannot** fail silently.*
 
----
-
-## 1 · Language & Environment
+### Language & Environment
 | Item            | Standard                         |
 |-----------------|----------------------------------|
-| Python version  | **3.12 +**                       |
+| Python version  | **3.12+**                       |
 | Virtual-env     | `python -m venv .venv`           |
-| Dependencies    | **pip-tools** (`*.in → *.txt`) <br>or **Poetry** |
+| Dependencies    | `pip-tools` (`*.in` -> `*.txt`)  |
 | OS targets      | Linux (Docker); macOS for dev    |
 
----
-
-## 2 · Formatting & Linting
+### Formatting & Linting
 | Tool    | Purpose                    | Enforcement |
 |---------|---------------------------|-------------|
 | **Black** | Auto-formatter (line 88)  | `pre-commit` hook |
@@ -24,3 +25,4 @@
 ```bash
 pre-commit install           # once
 pre-commit run --all-files   # one-shot check
+```

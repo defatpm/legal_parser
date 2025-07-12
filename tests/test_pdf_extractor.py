@@ -51,12 +51,13 @@ class TestPDFExtractor:
             assert isinstance(page.raw_text, str)
             assert isinstance(page.is_ocr_applied, bool)
 
+    @patch("pdfplumber.open")
     @patch("fitz.open")
     @patch("pathlib.Path.stat")
     @patch("pathlib.Path.is_file")
     @patch("pathlib.Path.exists")
     def test_extract_pages_with_mock(
-        self, mock_exists, mock_is_file, mock_stat, mock_fitz_open
+        self, mock_exists, mock_is_file, mock_stat, mock_fitz_open, mock_pdfplumber_open
     ):
         """Test extract_pages with mocked PyMuPDF."""
         # Mock file existence
@@ -72,21 +73,31 @@ class TestPDFExtractor:
 
         # Mock pages
         mock_page1 = Mock()
-        mock_page1.get_text.return_value = "Sample text from page 1"
+        mock_page1.get_text.return_value = "Sample text from page 1 that is long enough"
         mock_page2 = Mock()
-        mock_page2.get_text.return_value = "Sample text from page 2"
+        mock_page2.get_text.return_value = "Sample text from page 2 that is long enough"
 
         mock_doc.__getitem__ = Mock(side_effect=[mock_page1, mock_page2])
         mock_fitz_open.return_value = mock_doc
+
+        # Mock the pdfplumber document
+        mock_pdfplumber_doc = Mock()
+        mock_pdfplumber_doc.pages = [Mock(), Mock()]
+        mock_pdfplumber_doc.pages[0].extract_text.return_value = "Plumber text 1"
+        mock_pdfplumber_doc.pages[1].extract_text.return_value = "Plumber text 2"
+        mock_pdfplumber_open.return_value.__enter__.return_value = mock_pdfplumber_doc
+
+        # Mock the _apply_ocr_to_page method
+        self.extractor._apply_ocr_to_page = Mock(return_value="OCR text")
 
         # Test extraction
         pages = self.extractor.extract_pages(Path("test.pdf"))
 
         assert len(pages) == 2
         assert pages[0].page_number == 1
-        assert pages[0].raw_text == "Sample text from page 1"
+        assert pages[0].raw_text == "Sample text from page 1 that is long enough"
         assert pages[1].page_number == 2
-        assert pages[1].raw_text == "Sample text from page 2"
+        assert pages[1].raw_text == "Sample text from page 2 that is long enough"
 
     def test_ocr_threshold_logic(self):
         """Test OCR threshold logic."""
