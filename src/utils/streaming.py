@@ -346,7 +346,7 @@ class StreamingPDFProcessor:
         )
 
 
-def create_streaming_iterator[T](
+def create_streaming_iterator(  # noqa: UP047
     items: list[T], chunk_size: int = 100
 ) -> Iterator[list[T]]:
     """Create a streaming iterator that yields chunks of items.

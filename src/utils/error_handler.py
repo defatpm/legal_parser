@@ -177,7 +177,7 @@ class error_context:
         return True
 
 
-def safe_execute[T](
+def safe_execute(  # noqa: UP047
     func: Callable[..., T],
     *args,
     default_return: Any | None = None,
