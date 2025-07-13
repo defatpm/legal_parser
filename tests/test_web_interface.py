@@ -49,6 +49,9 @@ class MockStreamlit:
         self.markdown = MagicMock()
         self.write = MagicMock()
         self.rerun = MagicMock()
+        self.container = MagicMock()
+        self.container.return_value.__enter__ = MagicMock()
+        self.container.return_value.__exit__ = MagicMock()
         self.cache_resource = lambda func: func
 
 

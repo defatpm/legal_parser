@@ -23,6 +23,15 @@ class MetadataExtractor:
         Args:
             spacy_model: spaCy model to use for NLP processing
         """
+        # Add config attribute for test compatibility
+        try:
+            from ..utils.config import get_config
+
+            self.config = get_config()
+        except ImportError:
+            # Fallback for test environments
+            self.config = type("Config", (), {})()
+
         try:
             self.nlp = spacy.load(spacy_model)
         except OSError:

@@ -226,6 +226,28 @@ class PDFExtractor(BaseProcessor):
 
             return extract(pdf_path)
 
+    def _extract_text_from_page(self, page: fitz.Page) -> str:
+        """Extract text from a single page.
+
+        Args:
+            page: PyMuPDF page object
+
+        Returns:
+            Extracted text content
+        """
+        try:
+            # First try direct text extraction
+            text = page.get_text()
+
+            # If no text found, use OCR if enabled
+            if not text.strip() and self.config.pdf_extraction.ocr["enabled"]:
+                text = self._apply_ocr_to_page(page)
+
+            return text
+        except Exception as e:
+            logger.warning(f"Failed to extract text from page: {e}")
+            return ""
+
     @retry_on_error(
         max_retries=2, backoff_factor=0.5, retryable_exceptions=(OCRError, RuntimeError)
     )

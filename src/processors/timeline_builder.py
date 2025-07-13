@@ -22,6 +22,15 @@ class TimelineBuilder:
         Args:
             max_chunk_tokens: Maximum tokens per chunk
         """
+        # Add config attribute for test compatibility
+        try:
+            from ..utils.config import get_config
+
+            self.config = get_config()
+        except ImportError:
+            # Fallback for test environments
+            self.config = type("Config", (), {})()
+
         self.max_chunk_tokens = max_chunk_tokens
         self._ensure_nltk_data()
 

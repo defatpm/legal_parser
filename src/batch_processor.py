@@ -98,15 +98,21 @@ class BatchStatistics:
     successful_jobs: int
     failed_jobs: int
     total_duration: float
-    average_duration: float
-    fastest_job: float
-    slowest_job: float
-    total_pages_processed: int
-    average_pages_per_job: float
-    throughput_jobs_per_minute: float
-    throughput_pages_per_minute: float
-    memory_usage_mb: float
+    average_duration: float = 0.0
+    fastest_job: float = 0.0
+    slowest_job: float = 0.0
+    total_pages_processed: int = 0
+    average_pages_per_job: float = 0.0
+    throughput_jobs_per_minute: float = 0.0
+    throughput_pages_per_minute: float = 0.0
+    memory_usage_mb: float = 0.0
+    started_at: datetime | None = None
     errors: list[str] = field(default_factory=list)
+
+    @property
+    def success_rate(self) -> float:
+        """Calculate success rate as ratio."""
+        return self.successful_jobs / self.total_jobs if self.total_jobs > 0 else 0.0
 
 
 class BatchProcessor:
@@ -187,6 +193,22 @@ class BatchProcessor:
         self.jobs.append(job)
         self.progress.total_jobs = len(self.jobs)
         logger.info(f"Added {input_path} to batch")
+
+    def add_job(self, job: BatchJob) -> None:
+        """Add a job to the batch.
+
+        Args:
+            job: BatchJob to add to the batch
+        """
+        self.jobs.append(job)
+        self.progress.total_jobs = len(self.jobs)
+        logger.info(f"Added job {job.id} to batch")
+
+    def clear_jobs(self) -> None:
+        """Clear all jobs from the batch."""
+        self.jobs.clear()
+        self.progress = BatchProgress(0)
+        logger.info("Cleared all jobs from batch")
 
     def process_batch(self, resume: bool = False) -> BatchStatistics:
         """Process all jobs in the batch concurrently.

@@ -46,7 +46,9 @@ class TaskInfo:
             "task_id": self.task_id,
             "filename": self.filename,
             "file_path": str(self.file_path),
-            "status": self.status.value,
+            "status": (
+                self.status.value if hasattr(self.status, "value") else str(self.status)
+            ),
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": (

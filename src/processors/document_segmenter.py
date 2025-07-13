@@ -17,6 +17,15 @@ class DocumentSegmenter:
 
     def __init__(self):
         """Initialize segmenter with default patterns."""
+        # Add config attribute for test compatibility
+        try:
+            from ..utils.config import get_config
+
+            self.config = get_config()
+        except ImportError:
+            # Fallback for test environments
+            self.config = type("Config", (), {})()
+
         self.segment_patterns = self._build_segment_patterns()
         self.noise_patterns = self._build_noise_patterns()
 

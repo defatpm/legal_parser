@@ -237,6 +237,21 @@ class TaskStatusUpdate(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
 
+class BatchRequest(BaseModel):
+    """Simple batch request model for compatibility."""
+
+    max_workers: int = Field(4, description="Maximum number of worker threads")
+    output_format: str = Field("json", description="Output format (json, csv, excel)")
+
+    @field_validator("max_workers")
+    @classmethod
+    def validate_max_workers(cls, v):
+        """Validate maximum workers."""
+        if v < 1 or v > 10:
+            raise ValueError("max_workers must be between 1 and 10")
+        return v
+
+
 class APIVersion(BaseModel):
     """Model for API version information."""
 
