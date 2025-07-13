@@ -16,7 +16,7 @@ def to_csv_string(segments: list[DocumentSegment]) -> str:
         A string in CSV format.
     """
     output = io.StringIO()
-    writer = csv.writer(output)
+    writer = csv.writer(output, lineterminator="\n")
 
     # Write header
     writer.writerow(

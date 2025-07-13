@@ -501,10 +501,13 @@ async def test_lifespan():
         patch("src.api.main.get_task_manager") as mock_task_manager,
         patch("src.api.main.cleanup_old_files") as mock_cleanup,
         patch("src.api.main.shutdown_task_manager"),
-        patch("asyncio.get_event_loop") as mock_loop,
     ):
+        # Create a mock task manager
+        mock_tm = MagicMock()
+        mock_tm.start = MagicMock(return_value=None)
+        mock_tm.shutdown = MagicMock(return_value=None)
+        mock_task_manager.return_value = mock_tm
 
-        mock_loop.return_value = MagicMock()
         mock_cleanup.return_value = MagicMock()
 
         async with lifespan(app):
