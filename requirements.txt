@@ -24,3 +24,5 @@ aiofiles>=23.2.0
 streamlit>=1.28.0
 psutil
 textacy
+prometheus-fastapi-instrumentator
+slowapi

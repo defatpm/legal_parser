@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8501:8501"
+      - "8502:8501"
     volumes:
       - .:/app
-    command: streamlit run run_web_interface.py
+    command: streamlit run run_web_interface.py --server.port=8501 --server.address=0.0.0.0 --browser.gatherUsageStats=false
