@@ -279,7 +279,16 @@ def _process_batch(args, batch_processor=None) -> None:
                         data = json.load(f)
                     segments_data = data.get("segments", [])
                     if segments_data:
-                        segments = [DocumentSegment(**s) for s in segments_data]
+                        segments = [
+                            DocumentSegment(
+                                **{
+                                    **s,
+                                    "page_start": s.get("page_start", 1),
+                                    "page_end": s.get("page_end", 1),
+                                }
+                            )
+                            for s in segments_data
+                        ]
                         csv_str = to_csv_string(segments)
                         csv_path = (
                             args.csv_output / f"{job.input_path.stem}_segments.csv"
@@ -304,7 +313,16 @@ def _process_batch(args, batch_processor=None) -> None:
                         data = json.load(f)
                     segments_data = data.get("segments", [])
                     if segments_data:
-                        segments = [DocumentSegment(**s) for s in segments_data]
+                        segments = [
+                            DocumentSegment(
+                                **{
+                                    **s,
+                                    "page_start": s.get("page_start", 1),
+                                    "page_end": s.get("page_end", 1),
+                                }
+                            )
+                            for s in segments_data
+                        ]
                         excel_data = to_excel(segments)
                         excel_path = (
                             args.excel_output / f"{job.input_path.stem}_segments.xlsx"

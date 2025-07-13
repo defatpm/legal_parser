@@ -425,7 +425,16 @@ class WebInterface:
             # CSV export for segments
             segments_data = data.get("segments", [])
             if segments_data:
-                segments = [DocumentSegment(**s) for s in segments_data]
+                segments = [
+                    DocumentSegment(
+                        **{
+                            **s,
+                            "page_start": s.get("page_start", 1),
+                            "page_end": s.get("page_end", 1),
+                        }
+                    )
+                    for s in segments_data
+                ]
                 csv_str = to_csv_string(segments)
 
                 st.download_button(
@@ -439,7 +448,16 @@ class WebInterface:
             # Excel export for segments
             segments_data = data.get("segments", [])
             if segments_data:
-                segments = [DocumentSegment(**s) for s in segments_data]
+                segments = [
+                    DocumentSegment(
+                        **{
+                            **s,
+                            "page_start": s.get("page_start", 1),
+                            "page_end": s.get("page_end", 1),
+                        }
+                    )
+                    for s in segments_data
+                ]
                 excel_data = to_excel(segments)
 
                 st.download_button(
@@ -755,7 +773,16 @@ class WebInterface:
                     # Add segments CSV if available
                     segments_data = result["data"].get("segments", [])
                     if segments_data:
-                        segments = [DocumentSegment(**s) for s in segments_data]
+                        segments = [
+                            DocumentSegment(
+                                **{
+                                    **s,
+                                    "page_start": s.get("page_start", 1),
+                                    "page_end": s.get("page_end", 1),
+                                }
+                            )
+                            for s in segments_data
+                        ]
                         csv_str = to_csv_string(segments)
                         zip_file.writestr(
                             f"{Path(filename).stem}_segments.csv", csv_str
@@ -764,7 +791,16 @@ class WebInterface:
                     # Add segments Excel if available
                     segments_data = result["data"].get("segments", [])
                     if segments_data:
-                        segments = [DocumentSegment(**s) for s in segments_data]
+                        segments = [
+                            DocumentSegment(
+                                **{
+                                    **s,
+                                    "page_start": s.get("page_start", 1),
+                                    "page_end": s.get("page_end", 1),
+                                }
+                            )
+                            for s in segments_data
+                        ]
                         excel_data = to_excel(segments)
                         zip_file.writestr(
                             f"{Path(filename).stem}_segments.xlsx", excel_data

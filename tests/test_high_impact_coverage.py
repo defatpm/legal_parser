@@ -55,16 +55,11 @@ def test_pdf_processor_main_functions():
     """Test main functions in process_pdf.py to improve its 17% coverage."""
     # Test CLI argument parser functions
     from src.process_pdf import (
-        _add_input_arguments,
-        _add_output_arguments,
         _create_argument_parser,
     )
 
     parser = _create_argument_parser()
     assert parser is not None
-
-    _add_input_arguments(parser)
-    _add_output_arguments(parser)
 
     # Test that parser has expected arguments
     help_text = parser.format_help()

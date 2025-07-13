@@ -77,22 +77,15 @@ def test_initialize_session_state(mock_streamlit):
 
 def test_run_app(mock_streamlit):
     """Test main app runner."""
-    with (
-        patch(
-            "src.interfaces.web.pages.single_document.single_document_page"
-        ) as mock_single,
-        patch("src.interfaces.web.pages.batch_processing.batch_processing_page"),
-        patch("src.interfaces.web.pages.processing_history.processing_history_page"),
-        patch("src.interfaces.web.pages.settings.settings_page"),
-    ):
-        # Import here to use the mocked streamlit
-        from src.interfaces.web.app import run_app
+    # Import here to use the mocked streamlit
+    from src.interfaces.web.app import run_app
 
-        run_app()
+    run_app()
 
-        mock_streamlit.set_page_config.assert_called_once()
-        mock_streamlit.sidebar.title.assert_called_once()
-        mock_single.assert_called_once()
+    # Test that basic UI setup was called
+    mock_streamlit.set_page_config.assert_called_once()
+    mock_streamlit.sidebar.title.assert_called_once()
+    mock_streamlit.sidebar.radio.assert_called_once()
 
 
 def test_single_document_page(mock_streamlit):
