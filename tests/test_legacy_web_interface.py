@@ -339,31 +339,45 @@ def test_legacy_process_single_document():
     with (
         patch.object(interface.processor, "process_pdf") as mock_process,
         patch("tempfile.NamedTemporaryFile") as mock_temp,
-        patch("pathlib.Path") as mock_path,
-        patch("builtins.open", create=True) as mock_open,
+        patch("src.web_interface.Path") as mock_path_class,
+        patch("builtins.open", create=True),
+        patch("json.load") as mock_json_load,
     ):
         # Setup mocks
         mock_temp_file = MagicMock()
         mock_temp_file.name = "/tmp/test.pdf"
+        mock_temp_file.write = MagicMock()
         mock_temp.return_value.__enter__.return_value = mock_temp_file
 
+        # Setup path mocks properly
+        mock_tmp_path = MagicMock()
+        mock_tmp_path.parent = MagicMock()
+        mock_tmp_path.stem = "test"
+        mock_output_path = MagicMock()
+        mock_tmp_path.parent.__truediv__.return_value = mock_output_path
+
+        # Setup result path
         mock_result_path = MagicMock()
+        mock_result_path.__str__.return_value = "/tmp/test_processed.json"
+
+        # Configure Path() to return our mock path
+        mock_path_class.return_value = mock_tmp_path
+
+        # Configure process_pdf to return the result path
         mock_process.return_value = mock_result_path
 
-        mock_open.return_value.__enter__.return_value.read.return_value = (
-            '{"test": "data"}'
-        )
+        # Setup file read for JSON loading
+        mock_json_load.return_value = {"test": "data"}
 
-        # Setup path mocks
-        mock_path_instance = MagicMock()
-        mock_path_instance.parent = MagicMock()
-        mock_path_instance.stem = "test"
-        mock_path.return_value = mock_path_instance
+        # Mock pathlib cleanup operations
+        mock_tmp_path.unlink = MagicMock()
+        mock_output_path.unlink = MagicMock()
 
         interface._process_single_document(mock_file)
 
-        mock_process.assert_called_once()
-        # The method doesn't call st.success, it calls st.rerun
+        # Verify process_pdf was called with the correct arguments
+        mock_process.assert_called_once_with(mock_tmp_path, mock_output_path)
+        # The method calls st.rerun at the end
         mock_st.rerun.assert_called()
 
 
