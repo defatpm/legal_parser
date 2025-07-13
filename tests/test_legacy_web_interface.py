@@ -152,13 +152,16 @@ def test_legacy_single_document_page_with_file():
     mock_file.getvalue.return_value = b"test content"
 
     mock_st.file_uploader.return_value = mock_file
-    mock_st.button.return_value = True
+    # Mock button to return True specifically for "🚀 Process Document"
+    mock_st.button.side_effect = lambda label, **kwargs: "Process" in label
 
     # Mock _process_single_document method
-    with patch.object(interface, "_process_single_document"):
+    with patch.object(interface, "_process_single_document") as mock_process:
         interface._single_document_page()
 
         mock_st.file_uploader.assert_called()
+        # Verify that the process method was called when button was clicked
+        mock_process.assert_called_once_with(mock_file)
 
 
 def test_legacy_batch_processing_page():
