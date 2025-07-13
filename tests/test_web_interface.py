@@ -102,15 +102,17 @@ def test_single_document_page(mock_streamlit):
     mock_streamlit.file_uploader.return_value = mock_file
     mock_streamlit.button.return_value = True
 
+    # Mock session state processor
+    mock_processor = MagicMock()
+    mock_processor.process_pdf.return_value = {"test": "data"}
+    mock_streamlit.session_state.processor = mock_processor
+    mock_streamlit.session_state.history = {}
+
     with (
-        patch(
-            "src.interfaces.web.pages.single_document.PDFProcessor"
-        ) as mock_processor_class,
         patch("pathlib.Path") as mock_path,
+        patch("builtins.open", create=True),
+        patch("uuid.uuid4", return_value="test-uuid"),
     ):
-        mock_processor = MagicMock()
-        mock_processor.process_pdf.return_value = {"test": "data"}
-        mock_processor_class.return_value = mock_processor
         mock_path.return_value.unlink = MagicMock()
 
         # Import here to use the mocked streamlit
@@ -119,7 +121,7 @@ def test_single_document_page(mock_streamlit):
         single_document_page()
 
         mock_streamlit.title.assert_called_with("Single Document Processing")
-        mock_streamlit.success.assert_called()
+        mock_streamlit.spinner.assert_called()
 
 
 def test_single_document_error(mock_streamlit):
@@ -131,19 +133,30 @@ def test_single_document_error(mock_streamlit):
     mock_streamlit.file_uploader.return_value = mock_file
     mock_streamlit.button.return_value = True
 
-    with patch(
-        "src.interfaces.web.pages.single_document.PDFProcessor"
-    ) as mock_processor_class:
-        mock_processor = MagicMock()
-        mock_processor.process_pdf.side_effect = Exception("Test error")
-        mock_processor_class.return_value = mock_processor
+    # Mock session state processor that raises error
+    mock_processor = MagicMock()
+    from src.utils.exceptions import PDFProcessingError
+
+    mock_processor.process_pdf.side_effect = PDFProcessingError("Test error")
+    mock_streamlit.session_state.processor = mock_processor
+    mock_streamlit.session_state.history = {}
+
+    # Mock empty for status text
+    mock_status = MagicMock()
+    mock_streamlit.empty.return_value = mock_status
+
+    with (
+        patch("pathlib.Path") as mock_path,
+        patch("builtins.open", create=True),
+    ):
+        mock_path.return_value.unlink = MagicMock()
 
         # Import here to use the mocked streamlit
         from src.interfaces.web.pages.single_document import single_document_page
 
         single_document_page()
 
-        mock_streamlit.error.assert_called()
+        mock_status.error.assert_called()
 
 
 def test_batch_processing_page(mock_streamlit):
@@ -156,16 +169,16 @@ def test_batch_processing_page(mock_streamlit):
     mock_streamlit.slider.return_value = 2
     mock_streamlit.button.return_value = True
 
-    with patch(
-        "src.interfaces.web.pages.batch_processing.BatchProcessor"
-    ) as mock_batch_class:
-        mock_batch = MagicMock()
-        mock_batch.process_batch.return_value = [
-            {"filename": "file1.pdf", "status": "completed"},
-            {"filename": "file2.pdf", "status": "completed"},
-        ]
-        mock_batch_class.return_value = mock_batch
+    # Mock session state batch processor
+    mock_batch_processor = MagicMock()
+    mock_batch_processor.process_batch.return_value = [
+        {"filename": "file1.pdf", "status": "completed"},
+        {"filename": "file2.pdf", "status": "completed"},
+    ]
+    mock_streamlit.session_state.batch_processor = mock_batch_processor
+    mock_streamlit.session_state.batch_history = {}
 
+    with patch("uuid.uuid4", return_value="test-batch-uuid"):
         # Import here to use the mocked streamlit
         from src.interfaces.web.pages.batch_processing import batch_processing_page
 
@@ -247,12 +260,19 @@ def test_display_batch_results(mock_streamlit):
     # Import here to use the mocked streamlit
     from src.interfaces.web.components.results import display_batch_results
 
-    results = [{"filename": "test.pdf", "status": "completed"}]
-    display_batch_results(results)
+    results = [
+        {"filename": "test1.pdf", "status": "completed", "data": {"test": "data1"}},
+        {"filename": "test2.pdf", "status": "failed"},
+    ]
 
-    mock_streamlit.subheader.assert_called_with("Batch Results")
-    mock_streamlit.dataframe.assert_called_once()
-    mock_streamlit.download_button.assert_called()
+    with patch("src.interfaces.web.components.results.create_batch_zip") as mock_zip:
+        mock_zip.return_value = b"test zip data"
+
+        display_batch_results(results)
+
+        mock_streamlit.subheader.assert_called_with("Batch Results")
+        mock_streamlit.dataframe.assert_called_once()
+        mock_streamlit.download_button.assert_called()
 
 
 def test_data_to_csv():
