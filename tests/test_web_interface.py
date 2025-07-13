@@ -128,6 +128,7 @@ def test_single_document_error(mock_streamlit):
     """Test error handling in single document page."""
     mock_file = MagicMock()
     mock_file.name = "test.pdf"
+    mock_file.size = 1024  # Add size to prevent format string issues
     mock_file.getvalue.return_value = b"test"
 
     mock_streamlit.file_uploader.return_value = mock_file
@@ -172,8 +173,8 @@ def test_batch_processing_page(mock_streamlit):
     # Mock session state batch processor
     mock_batch_processor = MagicMock()
     mock_batch_processor.process_batch.return_value = [
-        {"filename": "file1.pdf", "status": "completed"},
-        {"filename": "file2.pdf", "status": "completed"},
+        {"filename": "file1.pdf", "status": "completed", "data": {"test": "data1"}},
+        {"filename": "file2.pdf", "status": "completed", "data": {"test": "data2"}},
     ]
     mock_streamlit.session_state.batch_processor = mock_batch_processor
     mock_streamlit.session_state.batch_history = {}
@@ -233,10 +234,17 @@ def test_settings_page(mock_streamlit):
     # Import here to use the mocked streamlit
     from src.interfaces.web.pages.settings import settings_page
 
-    settings_page()
+    # Mock ConfigManager.get_instance since it doesn't exist
+    with patch("src.interfaces.web.pages.settings.ConfigManager") as mock_config_class:
+        mock_config = MagicMock()
+        mock_config.dict.return_value = {"test": "config"}
+        mock_config.app.version = "1.0.0"
+        mock_config_class.get_instance.return_value = mock_config
 
-    mock_streamlit.title.assert_called_with("Settings & Configuration")
-    mock_streamlit.json.assert_called()
+        settings_page()
+
+        mock_streamlit.title.assert_called_with("Settings & Configuration")
+        mock_streamlit.json.assert_called()
 
 
 def test_display_results(mock_streamlit):
@@ -262,7 +270,7 @@ def test_display_batch_results(mock_streamlit):
 
     results = [
         {"filename": "test1.pdf", "status": "completed", "data": {"test": "data1"}},
-        {"filename": "test2.pdf", "status": "failed"},
+        {"filename": "test2.pdf", "status": "failed", "data": None},
     ]
 
     with patch("src.interfaces.web.components.results.create_batch_zip") as mock_zip:

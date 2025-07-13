@@ -71,6 +71,16 @@ class MockStreamlit:
         self.slider = MagicMock(return_value=4)
         self.selectbox = MagicMock(return_value="option1")
         self.write = MagicMock()
+        self.checkbox = MagicMock(return_value=True)
+        self.radio = MagicMock(return_value="option1")
+        self.multiselect = MagicMock(return_value=[])
+        self.text_input = MagicMock(return_value="")
+        self.number_input = MagicMock(return_value=0)
+        self.date_input = MagicMock()
+        self.time_input = MagicMock()
+        self.text_area = MagicMock(return_value="")
+        self.color_picker = MagicMock(return_value="#000000")
+        self.select_slider = MagicMock(return_value=0)
 
 
 # Create the mock and install it in sys.modules before importing
@@ -222,6 +232,12 @@ def test_legacy_display_single_document_results():
             },
             "timestamp": "2023-01-01",
             "processed_at": "2023-01-01T10:00:00",
+            "file_size": 12345,
+            "statistics": {
+                "processing_time": 5.2,
+                "pages_processed": 5,
+                "segments_found": 10,
+            },
         }
     }
 
@@ -240,10 +256,25 @@ def test_legacy_display_batch_results():
     mock_st.session_state.batch_results = {
         "test_batch": {
             "results": [
-                {"filename": "file1.pdf", "status": "success"},
-                {"filename": "file2.pdf", "status": "error", "error": "test error"},
+                {
+                    "filename": "file1.pdf",
+                    "status": "success",
+                    "data": {"test": "data1"},
+                },
+                {
+                    "filename": "file2.pdf",
+                    "status": "error",
+                    "error": "test error",
+                    "data": None,
+                },
             ],
             "timestamp": "2023-01-01",
+            "statistics": {
+                "total_files": 2,
+                "successful": 1,
+                "failed": 1,
+                "total_processing_time": 10.5,
+            },
         }
     }
 
