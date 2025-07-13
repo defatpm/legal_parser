@@ -3,15 +3,14 @@ from typing import Any
 import streamlit as st
 
 from src.batch_processor import BatchProcessor
+from src.interfaces.web.pages.batch_processing import batch_processing_page
+from src.interfaces.web.pages.processing_history import processing_history_page
+from src.interfaces.web.pages.settings import settings_page
+from src.interfaces.web.pages.single_document import single_document_page
 from src.process_pdf import PDFProcessor
 
 # Load config
 from src.utils.config import get_config
-
-from .pages.batch_processing import batch_processing_page
-from .pages.processing_history import processing_history_page
-from .pages.settings import settings_page
-from .pages.single_document import single_document_page
 
 config = get_config()
 

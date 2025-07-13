@@ -4,6 +4,7 @@
 
 [![Python CI](https://github.com/defatpm/legal_parser/actions/workflows/ci.yml/badge.svg)](https://github.com/defatpm/legal_parser/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Coverage](https://img.shields.io/badge/Coverage-80%2B%25-brightgreen.svg)](./htmlcov/index.html)
 
 ---
 
@@ -27,7 +28,10 @@ So, instead of a jumbled mess, you get a clean, organized storybook of what happ
 -   **Timeline Generation**: Automatically builds a chronological timeline of events from the document text.
 -   **Structured Output**: Generates clean, structured JSON that is ready for AI models or databases.
 -   **Interactive Web UI**: A user-friendly Streamlit app for easy document upload, processing, and visualization.
--   **Command-Line Interface**: For scripting, automation, and batch processing.
+-   **REST API**: FastAPI-based backend for programmatic access and integration.
+-   **Docker Support**: Containerized deployment with Docker Compose for easy setup.
+-   **Batch Processing**: Handle multiple documents simultaneously with progress tracking.
+-   **High Test Coverage**: 80%+ test coverage ensuring reliability and maintainability.
 
 ---
 
@@ -54,10 +58,10 @@ This decoupled architecture allows for flexible and independent development of t
 ### Prerequisites
 
 -   Python 3.9+
--   [Poetry](https://python-poetry.org/docs/#installation) for dependency management.
--   [Tesseract OCR Engine](https://tesseract-ocr.github.io/tessdoc/Installation.html) (optional, for scanned documents).
+-   [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) (recommended)
+-   [Tesseract OCR Engine](https://tesseract-ocr.github.io/tessdoc/Installation.html) (optional, for scanned documents)
 
-### Installation
+### Quick Start with Docker (Recommended)
 
 1.  **Clone the repository:**
     ```bash
@@ -65,34 +69,73 @@ This decoupled architecture allows for flexible and independent development of t
     cd legal_parser
     ```
 
-2.  **Install dependencies using Poetry:**
-    This command creates a virtual environment and installs all necessary packages.
+2.  **Start the services:**
     ```bash
-    poetry install
+    docker-compose up --build
     ```
 
-3.  **Download the spaCy model:**
+3.  **Access the application:**
+    - **Web Interface**: http://localhost:8502
+    - **API Documentation**: http://localhost:8000/docs
+    - **API Health Check**: http://localhost:8000/health/readiness
+
+### Manual Installation
+
+If you prefer to run without Docker:
+
+1.  **Clone and install dependencies:**
     ```bash
-    poetry run python -m spacy download en_core_web_sm
+    git clone https://github.com/defatpm/legal_parser.git
+    cd legal_parser
+    pip install -r requirements.txt
+    ```
+
+2.  **Download the spaCy model:**
+    ```bash
+    python -m spacy download en_core_web_sm
+    ```
+
+3.  **Run the applications:**
+    ```bash
+    # Start the API server
+    uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    
+    # Start the web interface (in another terminal)
+    streamlit run src/interfaces/web/app.py --server.port 8501
     ```
 
 ---
 
 ## 💻 Usage
 
-You can interact with Legal Parser in two primary ways:
+You can interact with Legal Parser in multiple ways:
 
 ### 1. Interactive Web Interface
 
 The most user-friendly way to use the tool. It supports single and batch document processing with real-time progress tracking and results visualization.
 
-**To run the web interface:**
-```bash
-streamlit run src/web_interface.py
-```
-Navigate to `http://localhost:8501` in your browser to upload files and view results.
+**Features:**
+- Upload single or multiple PDF files
+- Real-time processing progress
+- Interactive timeline visualization
+- Processing history and results management
+- Settings configuration
 
-### 2. Command-Line Interface (CLI)
+Access via: http://localhost:8502 (when using Docker) or http://localhost:8501 (manual setup)
+
+### 2. REST API
+
+Programmatic access for integration into other applications.
+
+**Key endpoints:**
+- `POST /api/process` - Process a single document
+- `POST /api/batch` - Process multiple documents
+- `GET /api/status/{task_id}` - Check processing status
+- `GET /health/readiness` - Health check
+
+API documentation available at: http://localhost:8000/docs
+
+### 3. Command-Line Interface (CLI)
 
 Ideal for scripting and integration into automated workflows.
 
@@ -101,17 +144,77 @@ Ideal for scripting and integration into automated workflows.
 python src/process_pdf.py --input path/to/your/document.pdf --output path/to/output.json
 ```
 
+**For batch processing:**
+```bash
+python src/batch_processor.py --input-dir path/to/pdfs/ --output-dir path/to/results/
+```
+
 ---
 
 
+## 🧪 Development & Testing
+
+### Running Tests
+
+```bash
+# Run all tests with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test categories
+pytest tests/unit/          # Unit tests
+pytest tests/integration/   # Integration tests
+
+# Generate coverage report
+pytest --cov=src --cov-report=html --cov-fail-under=80
+```
+
+### Code Quality
+
+```bash
+# Format code
+ruff format .
+
+# Lint code
+ruff check --fix .
+
+# Type checking
+mypy src/
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── api/                    # FastAPI backend
+│   ├── main.py            # API entry point
+│   ├── models.py          # Pydantic models
+│   └── tasks.py           # Background tasks
+├── interfaces/web/         # Streamlit web interface
+│   ├── app.py             # Main web app
+│   ├── pages/             # Individual pages
+│   └── components/        # Reusable components
+├── processors/            # Core processing logic
+│   ├── pdf_extractor.py   # PDF text extraction
+│   ├── document_segmenter.py # Document segmentation
+│   └── timeline_builder.py   # Timeline generation
+├── models/               # Data models
+├── utils/               # Shared utilities
+└── ...
+```
+
 ## 🗺️ Roadmap
 
-Our future plans include:
+Recent achievements:
+- ✅ **Comprehensive Testing**: 80%+ test coverage achieved
+- ✅ **CI/CD Automation**: GitHub Actions for automated testing and linting
+- ✅ **Docker Support**: Full containerization with Docker Compose
+- ✅ **REST API**: FastAPI backend with async processing
 
--   **Comprehensive Testing**: Building out a full suite of unit and integration tests.
--   **CI/CD Automation**: Setting up GitHub Actions for automated testing and linting.
--   **Performance Optimization**: Implementing parallel processing for even faster batch jobs.
--   **Enhanced Documentation**: Including more detailed API docs and usage examples.
+Future plans:
+-   **Performance Optimization**: Implementing parallel processing for even faster batch jobs
+-   **Enhanced NLP**: Advanced entity recognition and relationship extraction
+-   **Multi-format Support**: Support for Word documents, images, and other formats
+-   **Cloud Deployment**: Kubernetes deployment templates and cloud integration
 
 ---
 
