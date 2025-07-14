@@ -115,6 +115,14 @@ class DocumentSegmenter:
                     metadata={"detected_header": header},
                 )
                 segments.append(segment)
+
+        # If no segments found, create page-based segments as fallback
+        if not segments:
+            logger.warning(
+                "No segments found using patterns, creating page-based segments"
+            )
+            segments = self._create_page_based_segments(pages)
+
         return segments
 
     def _find_page_range(self, segment_text: str) -> tuple[int, int]:
@@ -132,6 +140,32 @@ class DocumentSegmenter:
             page_numbers = [int(p) for p in page_markers]
             return min(page_numbers), max(page_numbers)
         return 1, 1  # Default fallback
+
+    def _create_page_based_segments(
+        self, pages: list[PageContent]
+    ) -> list[DocumentSegment]:
+        """Create segments based on pages when pattern matching fails.
+
+        Args:
+            pages: List of page content
+
+        Returns:
+            List of page-based segments
+        """
+        segments = []
+        for page in pages:
+            if (
+                page.raw_text and len(page.raw_text.strip()) > 20
+            ):  # Only create segments for pages with content
+                segment = DocumentSegment(
+                    segment_id=str(uuid4()),
+                    text_content=page.raw_text.strip(),
+                    page_start=page.page_number,
+                    page_end=page.page_number,
+                    metadata={"segment_type": "page_based", "source": "fallback"},
+                )
+                segments.append(segment)
+        return segments
 
     def _build_segment_patterns(self) -> list[Pattern[str]]:
         """Build regex patterns for segment detection.

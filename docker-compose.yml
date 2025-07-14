@@ -17,9 +17,12 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.streamlit
     ports:
       - "8502:8501"
     volumes:
       - .:/app
-    command: streamlit run run_web_interface.py --server.port=8501 --server.address=0.0.0.0 --browser.gatherUsageStats=false
+    environment:
+      - PYTHONPATH=/app
+      - STREAMLIT_SERVER_ENABLE_STATIC_SERVING=true
+      - STREAMLIT_SERVER_HEADLESS=true

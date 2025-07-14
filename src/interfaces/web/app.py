@@ -8,8 +8,6 @@ from src.interfaces.web.pages.processing_history import processing_history_page
 from src.interfaces.web.pages.settings import settings_page
 from src.interfaces.web.pages.single_document import single_document_page
 from src.process_pdf import PDFProcessor
-
-# Load config
 from src.utils.config import get_config
 
 config = get_config()
@@ -39,7 +37,7 @@ def initialize_session_state():
 def run_app():
     """Main entry point for the Streamlit app."""
     st.set_page_config(
-        page_title=config.app.name,
+        page_title="Medical Record Processor",
         page_icon="⚖️",
         layout="wide",
         initial_sidebar_state="expanded",

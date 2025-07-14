@@ -1,3 +1,4 @@
+import json
 import time
 import uuid
 from datetime import datetime
@@ -36,24 +37,31 @@ def single_document_page():
 
                     # Process
                     processor = st.session_state.processor
-                    result = processor.process_pdf(temp_path)
+                    result_path = processor.process_pdf(temp_path)
 
                     # Update progress (simulated)
                     for i in range(1, 101):
                         progress.progress(i)
                         time.sleep(0.01)
 
+                    # Load the result data from JSON file
+                    with open(result_path) as f:
+                        result_data = json.load(f)
+
                     # Save to history
                     doc_id = str(uuid.uuid4())
                     st.session_state.history[doc_id] = {
                         "filename": uploaded_file.name,
                         "timestamp": datetime.now().isoformat(),
-                        "result": result,
+                        "result": result_data,
                         "status": "completed",
                     }
 
                     status_text.success("Processing complete!")
-                    display_results(result, uploaded_file.name)
+                    display_results(result_data, uploaded_file.name)
+
+                    # Clean up the temporary result file
+                    result_path.unlink(missing_ok=True)
 
                 except PDFProcessingError as e:
                     status_text.error(f"Error: {str(e)}")

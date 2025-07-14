@@ -220,9 +220,9 @@ class PDFExtractor(BaseProcessor):
             )
         with error_context({"operation": "pdf_extraction", "pdf_path": str(pdf_path)}):
 
-            @graceful_degradation(self._extract_with_pdfplumber)
+            @graceful_degradation(self._extract_with_pymupdf)
             def extract(pdf_path: Path) -> list[PageContent]:
-                return self._extract_with_pymupdf(pdf_path)
+                return self._extract_with_pdfplumber(pdf_path)
 
             return extract(pdf_path)
 
@@ -433,22 +433,52 @@ class PDFExtractor(BaseProcessor):
         return pages
 
     def _normalize_whitespace(self, text: str) -> str:
-        """Normalize whitespace in text.
+        """Normalize whitespace and clean control characters in text.
 
         Args:
             text: Input text
 
         Returns:
-            Text with normalized whitespace
+            Text with normalized whitespace and cleaned characters
         """
         import re
+        import unicodedata
+
+        # Remove control characters and non-printable characters
+        # Keep only printable ASCII and common Unicode characters
+        text = "".join(
+            char
+            for char in text
+            if unicodedata.category(char)[0] not in ("C",) or char in ("\n", "\t", "\r")
+        )
+
+        # Remove null bytes and other problematic characters
+        text = text.replace("\x00", "").replace("\ufffd", "")
+
+        # Remove common PDF artifacts and garbled text patterns
+        text = re.sub(
+            r"[^\x20-\x7E\n\r\t]", "", text
+        )  # Keep only printable ASCII + whitespace
+        text = re.sub(
+            r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]", "", text
+        )  # Remove control chars
+
+        # Remove sequences of special characters that are likely artifacts
+        text = re.sub(
+            r"[^a-zA-Z0-9\s\.\,\:\;\!\?\(\)\[\]\-\_\@\#\$\%\&\*\+\=\/\\]{3,}", " ", text
+        )
+
+        # Normalize Unicode characters
+        text = unicodedata.normalize("NFKD", text)
 
         # Replace multiple whitespace with single space
         text = re.sub(r"\s+", " ", text)
         # Remove leading/trailing whitespace from each line
         lines = [line.strip() for line in text.split("\n")]
-        # Remove empty lines
-        lines = [line for line in lines if line]
+        # Remove empty lines and lines that are mostly non-alphabetic
+        lines = [
+            line for line in lines if line and len(re.sub(r"[^a-zA-Z]", "", line)) >= 3
+        ]
         return "\n".join(lines)
 
     def _apply_config_overrides(self, config: dict[str, Any]) -> None:

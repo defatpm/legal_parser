@@ -201,9 +201,134 @@ class MetadataExtractor:
         Returns:
             List of extracted keywords
         """
-        doc = textacy.make_spacy_doc(text, lang=self.nlp)
-        keywords = textacy.extract.keyterms.sgrank(doc, topn=10)
-        return [kw for kw, score in keywords]
+        # Pre-filter text to remove likely garbled content
+        filtered_text = self._filter_text_for_keywords(text)
+
+        try:
+            doc = textacy.make_spacy_doc(filtered_text, lang=self.nlp)
+            keywords = textacy.extract.keyterms.sgrank(doc, topn=15)
+
+            # Filter keywords to remove garbled text
+            valid_keywords = []
+            for kw, _score in keywords:
+                if self._is_valid_keyword(kw):
+                    valid_keywords.append(kw)
+
+            return valid_keywords[:10]  # Return top 10 valid keywords
+        except Exception as e:
+            logger.warning(f"Keyword extraction failed: {e}")
+            return []
+
+    def _filter_text_for_keywords(self, text: str) -> str:
+        """Filter text to improve keyword extraction quality.
+
+        Args:
+            text: Raw text
+
+        Returns:
+            Filtered text suitable for keyword extraction
+        """
+        import re
+
+        # Remove page markers
+        text = re.sub(r"\[PAGE_\d+\]", "", text)
+
+        # Remove lines that are mostly non-alphabetic
+        lines = text.split("\n")
+        filtered_lines = []
+        for line in lines:
+            # Keep lines that have at least 50% alphabetic characters
+            alpha_chars = len(re.sub(r"[^a-zA-Z]", "", line))
+            if len(line) > 0 and alpha_chars / len(line) >= 0.5:
+                filtered_lines.append(line)
+
+        return "\n".join(filtered_lines)
+
+    def _is_valid_keyword(self, keyword: str) -> bool:
+        """Check if a keyword is valid (not garbled text).
+
+        Args:
+            keyword: Potential keyword
+
+        Returns:
+            True if keyword appears valid
+        """
+        import re
+
+        # Basic filters
+        if len(keyword) < 3 or len(keyword) > 30:
+            return False
+
+        # Must be mostly alphabetic
+        alpha_chars = len(re.sub(r"[^a-zA-Z]", "", keyword))
+        if alpha_chars / len(keyword) < 0.7:
+            return False
+
+        # Reject keywords with repeated characters (likely artifacts)
+        if re.search(r"(.)\1{2,}", keyword):
+            return False
+
+        # Reject keywords with too many special characters
+        special_chars = len(re.sub(r"[a-zA-Z0-9\s]", "", keyword))
+        if special_chars > len(keyword) * 0.3:
+            return False
+
+        # Medical/legal terms are more likely to be valid
+        medical_indicators = [
+            "patient",
+            "diagnosis",
+            "treatment",
+            "doctor",
+            "hospital",
+            "medical",
+            "clinical",
+            "therapy",
+            "medication",
+            "examination",
+            "record",
+            "report",
+            "history",
+            "service",
+            "provider",
+            "clinic",
+            "visit",
+            "care",
+            "health",
+        ]
+        if any(indicator in keyword.lower() for indicator in medical_indicators):
+            return True
+
+        # Common English words are likely valid
+        common_words = [
+            "the",
+            "and",
+            "for",
+            "with",
+            "from",
+            "this",
+            "that",
+            "will",
+            "have",
+            "been",
+            "were",
+            "said",
+            "each",
+            "which",
+            "their",
+            "time",
+            "day",
+            "may",
+            "use",
+            "her",
+            "would",
+            "there",
+            "one",
+            "all",
+        ]
+        if keyword.lower() in common_words:
+            return False  # Too common to be useful
+
+        return True
 
     def _build_document_type_keywords(self) -> dict[str, list[str]]:
         """Build document type keyword mapping.
